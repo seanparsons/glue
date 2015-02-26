@@ -12,6 +12,7 @@ import Control.Monad.IO.Class
 - Performance stats.
 - Retries.
 - Failover.
+- Dogpiling protection.
 - Request duplication, with completion based on the first successful result.
 -}
 
