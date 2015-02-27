@@ -21,6 +21,10 @@ library
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.8,
                        lrucache,
-                       transformers
+                       transformers,
+                       lifted-base,
+                       time,
+                       monad-control,
+                       MonadCatchIO-mtl
   hs-source-dirs:      src
   default-language:    Haskell2010
