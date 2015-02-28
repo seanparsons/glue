@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
 module ServiceFabric where
 
@@ -9,6 +11,8 @@ import Control.Monad.IO.Class
 import Data.IORef
 import Data.Time.Clock.POSIX
 import Control.Monad.CatchIO
+import Prelude hiding (catch)
+import Control.Exception.Base(SomeException)
 
 {-
 - Caching.
@@ -21,6 +25,21 @@ import Control.Monad.CatchIO
 - Dogpiling protection.
 - Request duplication, with completion based on the first successful result.
 -}
+
+data FailoverOptions a = FailoverOptions {
+    maxFailovers      :: Int
+  , transformRequest  :: a -> a
+}
+
+defaultFailoverOptions = FailoverOptions { maxFailovers = 3, transformRequest = id }
+
+failover :: (MonadCatchIO m) => FailoverOptions a -> BasicService m a b -> BasicService m a b
+failover options service =
+  let invokeService failCount request = 
+                                        let afterFail   = (\(e :: SomeException) -> invokeService (failCount + 1) ((transformRequest options) request))
+                                            invoke      = service request
+                                        in  if failCount > (maxFailovers options) then invoke else catch invoke afterFail
+  in  invokeService 0
 
 cacheWith :: (MonadIO m) => (a -> m (Maybe b)) -> (a -> b -> m ()) -> BasicService m a b -> BasicService m a b
 cacheWith lookupWith insertWith service = 
@@ -40,19 +59,19 @@ cacheWithAtomicLRU lru service =
   in  cacheWith lookupWith insertWith service
 
 data CircuitBreakerOptions = CircuitBreakerOptions {
-    maxFailures       :: Int
-  , resetTimeoutSecs  :: Int
-  , failureDetails    :: String
+    maxBreakerFailures  :: Int
+  , resetTimeoutSecs    :: Int
+  , failureDetails      :: String
 }
 
-defaultCircuitBreakerOptions = CircuitBreakerOptions { maxFailures = 3, resetTimeoutSecs = 60, failureDetails = "Circuit breaker open."}
+defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, resetTimeoutSecs = 60, failureDetails = "Circuit breaker open." }
 
 data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
 
 circuitBreaker :: (MonadCatchIO m) => CircuitBreakerOptions -> BasicService m a b -> m (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftIO $ round `fmap` getPOSIXTime
-      failureMax                  = maxFailures options
+      failureMax                  = maxBreakerFailures options
       callIfClosed request ref    = bracketOnError (return ()) (\_ -> incErrors ref) (\_ -> service request)
       canaryCall request ref      = do
                                       result <- callIfClosed request ref
