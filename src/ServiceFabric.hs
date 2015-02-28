@@ -51,26 +51,27 @@ data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
 
 circuitBreaker :: (MonadCatchIO m) => CircuitBreakerOptions -> BasicService m a b -> m (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
-  let getCurrentTime              = round `fmap` getPOSIXTime
+  let getCurrentTime              = liftIO $ round `fmap` getPOSIXTime
       failureMax                  = maxFailures options
-      callIfClosed request ref    = do 
-                                      result <- bracketOnError (return ()) (\_ -> incErrors ref) (\_ -> service request)
+      callIfClosed request ref    = bracketOnError (return ()) (\_ -> incErrors ref) (\_ -> service request)
+      canaryCall request ref      = do
+                                      result <- callIfClosed request ref
                                       liftIO $ writeIORef ref $ CircuitBreakerClosed 0
                                       return result
       incErrors ref               = do
                                       currentTime <- getCurrentTime
-                                      atomicModifyIORef' ref $ \status -> case status of
+                                      liftIO $ atomicModifyIORef' ref $ \status -> case status of
                                         (CircuitBreakerClosed errorCount) -> (if errorCount >= failureMax then CircuitBreakerOpen (currentTime + (resetTimeoutSecs options)) else CircuitBreakerClosed (errorCount + 1), ())
                                         other                             -> (other, ())
                                       
       failingCall                 = fail $ failureDetails options
       callIfOpen request ref      = do
-                                      currentTime <- liftIO $ getCurrentTime
+                                      currentTime <- getCurrentTime
                                       canaryRequest <- liftIO $ atomicModifyIORef' ref $ \status -> case status of 
                                                               (CircuitBreakerClosed _)  -> (status, False)
                                                               (CircuitBreakerOpen time) -> if currentTime > time then ((CircuitBreakerOpen (currentTime + (resetTimeoutSecs options))), True) else (status, False)
                                       
-                                      if canaryRequest then callIfClosed request ref else failingCall
+                                      if canaryRequest then canaryCall request ref else failingCall
       breakerService ref request  = do
                                       status <- liftIO $ readIORef ref
                                       case status of 
