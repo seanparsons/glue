@@ -1,9 +1,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module ServiceFabric.CircuitBreaker where
 
+import Data.Typeable
 import ServiceFabric.Types
 import Control.Monad.IO.Class
 import Data.IORef
@@ -21,6 +23,9 @@ defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, r
 
 data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
 
+data CircuitBreakerException = CircuitBreakerException String deriving (Eq, Show, Typeable)
+instance Exception CircuitBreakerException
+
 circuitBreaker :: (MonadCatchIO m) => CircuitBreakerOptions -> BasicService m a b -> m (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftIO $ round `fmap` getPOSIXTime
@@ -36,7 +41,7 @@ circuitBreaker options service =
                                         (CircuitBreakerClosed errorCount) -> (if errorCount >= failureMax then CircuitBreakerOpen (currentTime + (resetTimeoutSecs options)) else CircuitBreakerClosed (errorCount + 1), ())
                                         other                             -> (other, ())
                                       
-      failingCall                 = fail $ failureDetails options
+      failingCall                 = throw $ CircuitBreakerException $ failureDetails options
       callIfOpen request ref      = do
                                       currentTime <- getCurrentTime
                                       canaryRequest <- liftIO $ atomicModifyIORef' ref $ \status -> case status of 
