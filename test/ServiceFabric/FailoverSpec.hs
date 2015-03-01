@@ -16,11 +16,12 @@ spec :: Spec
 spec = do
   describe "failover" $ do
     it "Failover handles potentially multiple errors" $ do
-      property $ \request ->
+      property $ \(request, failureMax) ->
         let
-          service req       = if req >= 10 then return (req + 100) else throw FailoverTestException 
-          options           = defaultFailoverOptions { transformRequest = (+1) }
-          failOverService   = failover options service
-          successCase       = (failOverService request) `shouldReturn` ((if request <= 10 then 10 else request) + 100)
-          failureCase       = (failOverService request) `shouldThrow` (== FailoverTestException)
-        in if (request :: Int) >= 7 then successCase else failureCase 
+          positiveFailureMax  = (abs failureMax) `mod` 10
+          service req         = if req >= 10 then return (req + 100) else throw FailoverTestException 
+          options             = defaultFailoverOptions { transformRequest = (+1), maxFailovers = positiveFailureMax }
+          failOverService     = failover options service
+          successCase         = (failOverService request) `shouldReturn` ((if request <= 10 then 10 else request) + 100)
+          failureCase         = (failOverService request) `shouldThrow` (== FailoverTestException)
+        in if request + positiveFailureMax >= 10 then successCase else failureCase 
