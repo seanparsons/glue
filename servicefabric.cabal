@@ -25,7 +25,9 @@ library
                         lifted-base,
                         time,
                         monad-control,
-                        MonadCatchIO-mtl
+                        MonadCatchIO-mtl,
+                        unordered-containers,
+                        hashable
   ghc-options:          -rtsopts
                         -Wall
                         -O2
@@ -42,7 +44,9 @@ test-suite tests
                         lifted-base,
                         time,
                         monad-control,
-                        MonadCatchIO-mtl
+                        MonadCatchIO-mtl,
+                        unordered-containers,
+                        hashable
   ghc-options:          -rtsopts
                         -Wall
                         -O2

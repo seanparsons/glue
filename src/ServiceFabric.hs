@@ -7,13 +7,14 @@ module ServiceFabric
   , module ServiceFabric.Failover
   , module ServiceFabric.Caching
   , module ServiceFabric.CircuitBreaker
+  , module ServiceFabric.DogpileProtection
 ) where
 
 import ServiceFabric.Types
 import ServiceFabric.Failover
 import ServiceFabric.Caching
 import ServiceFabric.CircuitBreaker
-
+import ServiceFabric.DogpileProtection
 
 {-
 - Caching.
