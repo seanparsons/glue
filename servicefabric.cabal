@@ -46,7 +46,8 @@ test-suite tests
                         monad-control,
                         MonadCatchIO-mtl,
                         unordered-containers,
-                        hashable
+                        hashable,
+                        async
   ghc-options:          -rtsopts
                         -Wall
                         -O2
