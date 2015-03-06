@@ -18,12 +18,13 @@ import ServiceFabric.DogpileProtection
 
 {-
 - Caching.
-- Timeouts.
 - Fail fast/circuit breaker.
+- Failover.
+- Dogpile protection.
+
+- Timeouts.
 - Multi get optimisations.
 - Performance stats.
 - Retries.
-- Failover.
-- Dogpiling protection.
 - Request duplication, with completion based on the first successful result.
 -}
