@@ -26,6 +26,7 @@ data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
 data CircuitBreakerException = CircuitBreakerException String deriving (Eq, Show, Typeable)
 instance Exception CircuitBreakerException
 
+-- TODO: Check that values within m aren't lost on a successful call.
 circuitBreaker :: (MonadCatchIO m) => CircuitBreakerOptions -> BasicService m a b -> m (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftIO $ round `fmap` getPOSIXTime

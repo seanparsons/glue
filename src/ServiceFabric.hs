@@ -8,6 +8,7 @@ module ServiceFabric
   , module ServiceFabric.Caching
   , module ServiceFabric.CircuitBreaker
   , module ServiceFabric.DogpileProtection
+  , module ServiceFabric.Timeout
 ) where
 
 import ServiceFabric.Types
@@ -15,6 +16,7 @@ import ServiceFabric.Failover
 import ServiceFabric.Caching
 import ServiceFabric.CircuitBreaker
 import ServiceFabric.DogpileProtection
+import ServiceFabric.Timeout
 
 {-
 - Caching.
