@@ -27,6 +27,6 @@ addTimeout :: (MonadCatchIO m) => TimeoutOptions -> BasicService m a b -> BasicS
 addTimeout options service = (\request -> do
   currentThreadId <- liftIO $ myThreadId
   timeoutThreadId <- liftIO $ forkIO $ do
-                                          threadDelay (timeoutLimitMs options)
+                                          threadDelay (1000 * timeoutLimitMs options)
                                           throwTo currentThreadId (TimeoutException $ timeoutDescription options)
   finally (service request) (liftIO $ killThread timeoutThreadId))

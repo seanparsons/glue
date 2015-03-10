@@ -18,12 +18,15 @@ instance Exception DogpileProtectionTestException
 requests :: [Int]
 requests = take 10 $ repeat 1
 
+delayTime :: Int
+delayTime = 1000 * 1000
+
 spec :: Spec
 spec = do
   describe "dogpileProtect" $ do
     it "With multiple calls to a slow service only one actually gets through" $ do
       counter <- newIORef (0 :: Int)
-      let service request = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay 1000 >> return (request * 2)
+      let service request = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay delayTime >> return (request * 2)
       (_, protectedService) <- dogpileProtect service
       asyncResults <- traverse (async . protectedService) requests
       let results = traverse wait asyncResults
@@ -31,7 +34,7 @@ spec = do
       (readIORef counter) `shouldReturn` 1
     it "With multiple calls to a slow failing service only one actually gets through" $ do
       counter <- newIORef (0 :: Int)
-      let service _ = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay 1000 >> throw DogpileProtectionTestException :: IO Int
+      let service _ = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay delayTime >> throw DogpileProtectionTestException :: IO Int
       (_, protectedService) <- dogpileProtect service
       asyncResults <- traverse (async . protectedService) requests
       let results = traverse wait asyncResults
