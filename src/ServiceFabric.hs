@@ -23,10 +23,10 @@ import ServiceFabric.Timeout
 - Fail fast/circuit breaker.
 - Failover.
 - Dogpile protection.
-
 - Timeouts.
-- Multi get optimisations.
-- Performance stats.
+
 - Retries.
+- Performance stats.
+- Multi get optimisations.
 - Request duplication, with completion based on the first successful result.
 -}
