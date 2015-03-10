@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
 module ServiceFabric.Retry where
