@@ -9,6 +9,7 @@ module ServiceFabric
   , module ServiceFabric.CircuitBreaker
   , module ServiceFabric.DogpileProtection
   , module ServiceFabric.Timeout
+  , module ServiceFabric.Retry
 ) where
 
 import ServiceFabric.Types
@@ -17,6 +18,7 @@ import ServiceFabric.Caching
 import ServiceFabric.CircuitBreaker
 import ServiceFabric.DogpileProtection
 import ServiceFabric.Timeout
+import ServiceFabric.Retry
 
 {-
 - Caching.
@@ -27,6 +29,6 @@ import ServiceFabric.Timeout
 
 - Retries.
 - Performance stats.
-- Multi get optimisations.
 - Request duplication, with completion based on the first successful result.
+- Multi get optimisations.
 -}

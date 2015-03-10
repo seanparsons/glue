@@ -22,7 +22,6 @@ defaultTimeoutOptions = TimeoutOptions { timeoutDescription = "Service call time
 data TimeoutException = TimeoutException String deriving (Eq, Show, Typeable)
 instance Exception TimeoutException
 
--- Forking would result in the values within m being lost.
 addTimeout :: (MonadCatchIO m) => TimeoutOptions -> BasicService m a b -> BasicService m a b
 addTimeout options service = (\request -> do
   currentThreadId <- liftIO $ myThreadId
