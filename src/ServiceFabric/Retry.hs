@@ -31,9 +31,9 @@ instance Exception RetryException
 
 retryingService :: (MonadCatchIO m) => RetryOptions a -> BasicService m a b -> BasicService m a b
 retryingService options service =
-  let attempt attemptCount request  = if (retryAllowed options) request && maxAttempts <= attemptCount
-                                      then catch (service request) (\(_ :: SomeException) -> (wait attemptCount) >> (attempt (attemptCount + 1) request))
+  let attempt retryCount request  = if (retryAllowed options) request && maxRetries > retryCount
+                                      then catch (service request) (\(_ :: SomeException) -> (wait (retryCount + 1)) >> (attempt (retryCount + 1) request))
                                       else service request
-      maxAttempts                   = maximumRetries options
-      wait attemptCount             = liftIO $ threadDelay $ round $ fromIntegral (retryInitialWaitTimeMs options) * ((retryWaitTimeMultiplier options) ^ attemptCount)
-  in  attempt 1
+      maxRetries                  = maximumRetries options
+      wait retryCount             = liftIO $ threadDelay $ round $ fromIntegral (retryInitialWaitTimeMs options) * ((retryWaitTimeMultiplier options) ^ retryCount)
+  in  attempt 0

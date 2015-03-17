@@ -25,8 +25,8 @@ import ServiceFabric.Retry
 - Failover.
 - Dogpile protection.
 - Timeouts.
-
 - Retries.
+
 - Performance stats.
 - Request duplication, with completion based on the first successful result.
 - Multi get optimisations.
