@@ -2,10 +2,17 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module ServiceFabric.Retry where
+module ServiceFabric.Retry(
+    RetryOptions
+  , defaultRetryOptions
+  , retryingService
+  , retryAllowed
+  , retryInitialWaitTimeMs
+  , maximumRetries
+  , retryWaitTimeMultiplier
+) where
 
 import Control.Exception.Base(SomeException)
-import Data.Typeable
 import ServiceFabric.Types
 import Control.Concurrent
 import Control.Monad.IO.Class
@@ -26,9 +33,7 @@ defaultRetryOptions = RetryOptions {
   , retryWaitTimeMultiplier = 0
   }
 
-data RetryException = RetryException String deriving (Eq, Show, Typeable)
-instance Exception RetryException
-
+-- |Retries a call to a service multiple times, potentially backing off wait times between subsequent calls.
 retryingService :: (MonadCatchIO m) => RetryOptions a -> BasicService m a b -> BasicService m a b
 retryingService options service =
   let attempt retryCount request  = if (retryAllowed options) request && maxRetries > retryCount

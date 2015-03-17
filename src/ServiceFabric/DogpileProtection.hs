@@ -1,7 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric.DogpileProtection where
+module ServiceFabric.DogpileProtection(
+  dogpileProtect
+) where
 
 import Data.HashMap.Strict
 import qualified Data.HashMap.Strict as M

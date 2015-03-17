@@ -2,7 +2,14 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module ServiceFabric.Timeout where
+module ServiceFabric.Timeout(
+    TimeoutOptions
+  , TimeoutException(..)
+  , defaultTimeoutOptions
+  , addTimeout
+  , timeoutDescription
+  , timeoutLimitMs
+) where
 
 import Data.Typeable
 import ServiceFabric.Types

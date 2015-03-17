@@ -2,7 +2,16 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module ServiceFabric.CircuitBreaker where
+module ServiceFabric.CircuitBreaker(
+    CircuitBreakerOptions
+  , CircuitBreakerStatus
+  , CircuitBreakerException(..)
+  , defaultCircuitBreakerOptions
+  , circuitBreaker
+  , maxBreakerFailures
+  , resetTimeoutSecs
+  , breakerDescription
+) where
 
 import Data.Typeable
 import ServiceFabric.Types
@@ -14,11 +23,11 @@ import Control.Monad.CatchIO
 data CircuitBreakerOptions = CircuitBreakerOptions {
     maxBreakerFailures  :: Int
   , resetTimeoutSecs    :: Int
-  , failureDetails      :: String
+  , breakerDescription      :: String
 }
 
 defaultCircuitBreakerOptions :: CircuitBreakerOptions
-defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, resetTimeoutSecs = 60, failureDetails = "Circuit breaker open." }
+defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, resetTimeoutSecs = 60, breakerDescription = "Circuit breaker open." }
 
 data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
 
@@ -41,7 +50,7 @@ circuitBreaker options service =
                                         (CircuitBreakerClosed errorCount) -> (if errorCount >= failureMax then CircuitBreakerOpen (currentTime + (resetTimeoutSecs options)) else CircuitBreakerClosed (errorCount + 1), ())
                                         other                             -> (other, ())
                                       
-      failingCall                 = throw $ CircuitBreakerException $ failureDetails options
+      failingCall                 = throw $ CircuitBreakerException $ breakerDescription options
       callIfOpen request ref      = do
                                       currentTime <- getCurrentTime
                                       canaryRequest <- liftIO $ atomicModifyIORef' ref $ \status -> case status of 

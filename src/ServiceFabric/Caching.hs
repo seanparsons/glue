@@ -1,7 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric.Caching where
+module ServiceFabric.Caching(
+    cacheWith
+  , cacheWithAtomicLRU
+) where
 
 import ServiceFabric.Types
 import Data.Cache.LRU.IO
