@@ -30,6 +30,9 @@ import ServiceFabric.Retry
 - Multi-get optimisations.
   - Multi-get combining with multi-get dogpile protection will deal with 
     smoothing multiple requests from different sources requesting the same thing.
+  - Potentially instead of trying to do complex combining of lookups, 
+    dispatch a multi-get query every X ms, which is the accumulation of all the requests
+    made.
 - Performance stats.
 - Request duplication, with completion based on the first successful result.
 -}
