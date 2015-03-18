@@ -27,7 +27,9 @@ import ServiceFabric.Retry
 - Timeouts.
 - Retries.
 
+- Multi-get optimisations.
+  - Multi-get combining with multi-get dogpile protection will deal with 
+    smoothing multiple requests from different sources requesting the same thing.
 - Performance stats.
 - Request duplication, with completion based on the first successful result.
-- Multi get optimisations.
 -}

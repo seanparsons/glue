@@ -15,6 +15,8 @@ import Control.Monad.IO.Class
 import Control.Monad.CatchIO
 
 -- Loses the values held within m.
+-- Should make this return just BasicService, hiding the HashMap.
+-- Need sharding support.
 dogpileProtect :: (MonadCatchIO m, Eq a, Hashable a) => BasicService m a b -> m (IORef (HashMap a (ResultVar b)), BasicService m a b)
 dogpileProtect service = do
   mapRef <- liftIO $ newIORef M.empty
