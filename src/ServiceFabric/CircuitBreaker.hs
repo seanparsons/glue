@@ -23,7 +23,7 @@ import Control.Monad.CatchIO
 data CircuitBreakerOptions = CircuitBreakerOptions {
     maxBreakerFailures  :: Int
   , resetTimeoutSecs    :: Int
-  , breakerDescription      :: String
+  , breakerDescription  :: String
 }
 
 defaultCircuitBreakerOptions :: CircuitBreakerOptions
