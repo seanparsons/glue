@@ -9,6 +9,7 @@ module ServiceFabric
   , module ServiceFabric.DogpileProtection
   , module ServiceFabric.Timeout
   , module ServiceFabric.Retry
+  , module ServiceFabric.Batcher
 ) where
 
 import ServiceFabric.Types
@@ -18,6 +19,7 @@ import ServiceFabric.CircuitBreaker
 import ServiceFabric.DogpileProtection
 import ServiceFabric.Timeout
 import ServiceFabric.Retry
+import ServiceFabric.Batcher
 
 {-
 - Caching.
