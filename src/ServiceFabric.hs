@@ -38,4 +38,5 @@ import ServiceFabric.Batcher
 - Performance stats.
 - Request duplication, with completion based on the first successful result.
 - Graceful service shutdown, reject new requests with a default value, wait for a period of time while existing requests continue. Then possibly a cancel action?
+- Caching that supports refreshing invisibly to the consumer?
 -}
