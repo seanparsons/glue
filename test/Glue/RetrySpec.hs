@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable #-}
 
-module ServiceFabric.RetrySpec where
+module Glue.RetrySpec where
 
 import Data.IORef
 import Data.Typeable
-import ServiceFabric.Retry
+import Glue.Retry
 import Test.Hspec
 import Test.QuickCheck
 import Control.Exception.Base hiding (throw)

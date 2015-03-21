@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric.Failover(
+module Glue.Failover(
     FailoverOptions
   , defaultFailoverOptions
   , failover
@@ -9,7 +9,7 @@ module ServiceFabric.Failover(
   , transformFailoverRequest
 ) where
 
-import ServiceFabric.Types
+import Glue.Types
 import Control.Monad.CatchIO
 import Control.Exception.Base(SomeException)
 

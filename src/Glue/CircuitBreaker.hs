@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module ServiceFabric.CircuitBreaker(
+module Glue.CircuitBreaker(
     CircuitBreakerOptions
   , CircuitBreakerStatus
   , CircuitBreakerException(..)
@@ -14,7 +14,7 @@ module ServiceFabric.CircuitBreaker(
 ) where
 
 import Data.Typeable
-import ServiceFabric.Types
+import Glue.Types
 import Control.Monad.IO.Class
 import Data.IORef
 import Data.Time.Clock.POSIX

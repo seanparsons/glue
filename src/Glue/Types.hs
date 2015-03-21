@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 
-module ServiceFabric.Types(
+module Glue.Types(
     BasicService
   , MultiGetService
   , ResultVar

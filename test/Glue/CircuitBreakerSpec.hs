@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
 
-module ServiceFabric.CircuitBreakerSpec where
+module Glue.CircuitBreakerSpec where
 
 import Data.Traversable
 import Data.Typeable
-import ServiceFabric.CircuitBreaker
+import Glue.CircuitBreaker
 import Test.Hspec
 import Data.IORef
 import Test.QuickCheck

@@ -1,12 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric.Caching(
+module Glue.Caching(
     cacheWith
   , cacheWithAtomicLRU
 ) where
 
-import ServiceFabric.Types
+import Glue.Types
 import Data.Cache.LRU.IO
 import qualified Data.Cache.LRU.IO as LRU
 import Control.Monad.IO.Class

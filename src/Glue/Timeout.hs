@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module ServiceFabric.Timeout(
+module Glue.Timeout(
     TimeoutOptions
   , TimeoutException(..)
   , defaultTimeoutOptions
@@ -12,7 +12,7 @@ module ServiceFabric.Timeout(
 ) where
 
 import Data.Typeable
-import ServiceFabric.Types
+import Glue.Types
 import Control.Concurrent
 import Control.Monad.IO.Class
 import Control.Monad.CatchIO

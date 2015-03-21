@@ -1,25 +1,25 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric
-  ( module ServiceFabric.Types
-  , module ServiceFabric.Failover
-  , module ServiceFabric.Caching
-  , module ServiceFabric.CircuitBreaker
-  , module ServiceFabric.DogpileProtection
-  , module ServiceFabric.Timeout
-  , module ServiceFabric.Retry
-  , module ServiceFabric.Batcher
+module Glue
+  ( module Glue.Types
+  , module Glue.Failover
+  , module Glue.Caching
+  , module Glue.CircuitBreaker
+  , module Glue.DogpileProtection
+  , module Glue.Timeout
+  , module Glue.Retry
+  , module Glue.Batcher
 ) where
 
-import ServiceFabric.Types
-import ServiceFabric.Failover
-import ServiceFabric.Caching
-import ServiceFabric.CircuitBreaker
-import ServiceFabric.DogpileProtection
-import ServiceFabric.Timeout
-import ServiceFabric.Retry
-import ServiceFabric.Batcher
+import Glue.Types
+import Glue.Failover
+import Glue.Caching
+import Glue.CircuitBreaker
+import Glue.DogpileProtection
+import Glue.Timeout
+import Glue.Retry
+import Glue.Batcher
 
 {-
 - Caching.

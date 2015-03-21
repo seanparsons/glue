@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
 
-module ServiceFabric.CachingSpec where
+module Glue.CachingSpec where
 
 import Data.Typeable
-import ServiceFabric.Caching
+import Glue.Caching
 import Test.Hspec
 import Data.IORef
 import Test.QuickCheck

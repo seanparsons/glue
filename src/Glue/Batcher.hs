@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric.Batcher(
+module Glue.Batcher(
     BatchingOptions
   , batchingService
   , defaultBatchingOptions
@@ -18,7 +18,7 @@ import qualified Data.HashMap.Strict as M
 import Data.Foldable
 import Data.Hashable
 import Data.IORef.Lifted
-import ServiceFabric.Types
+import Glue.Types
 
 data BatchingOptions = BatchingOptions {
     batchWindowMs :: Int

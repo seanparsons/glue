@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
 
-module ServiceFabric.DogpileProtectionSpec where
+module Glue.DogpileProtectionSpec where
 
 import Data.Traversable
 import Data.Typeable
-import ServiceFabric.DogpileProtection
+import Glue.DogpileProtection
 import Test.Hspec
 import Data.IORef
 import Control.Monad.CatchIO

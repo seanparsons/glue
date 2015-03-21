@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable #-}
 
-module ServiceFabric.TimeoutSpec where
+module Glue.TimeoutSpec where
 
-import ServiceFabric.Timeout
+import Glue.Timeout
 import Test.Hspec
 import Test.QuickCheck
 import Control.Concurrent

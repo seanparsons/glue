@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ServiceFabric.DogpileProtection(
+module Glue.DogpileProtection(
   dogpileProtect
 ) where
 
@@ -9,7 +9,7 @@ import Data.HashMap.Strict
 import qualified Data.HashMap.Strict as M
 import Data.Hashable
 import Data.IORef
-import ServiceFabric.Types
+import Glue.Types
 import Control.Concurrent
 import Control.Monad.IO.Class
 import Control.Monad.CatchIO

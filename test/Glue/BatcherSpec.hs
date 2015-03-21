@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
 
-module ServiceFabric.BatcherSpec where
+module Glue.BatcherSpec where
 
 import Control.Concurrent.Async
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
-import ServiceFabric.Batcher
-import ServiceFabric.Types
+import Glue.Batcher
+import Glue.Types
 import Test.Hspec
 import Test.QuickCheck
 

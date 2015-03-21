@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module ServiceFabric.Retry(
+module Glue.Retry(
     RetryOptions
   , defaultRetryOptions
   , retryingService
@@ -13,7 +13,7 @@ module ServiceFabric.Retry(
 ) where
 
 import Control.Exception.Base(SomeException)
-import ServiceFabric.Types
+import Glue.Types
 import Control.Concurrent
 import Control.Monad.IO.Class
 import Control.Monad.CatchIO

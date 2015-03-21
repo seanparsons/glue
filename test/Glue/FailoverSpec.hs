@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable #-}
 
-module ServiceFabric.FailoverSpec where
+module Glue.FailoverSpec where
 
 import Data.Typeable
-import ServiceFabric.Failover
+import Glue.Failover
 import Test.Hspec
 import Test.QuickCheck
 import Control.Exception.Base hiding (throw)
