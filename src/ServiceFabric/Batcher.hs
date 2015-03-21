@@ -4,70 +4,30 @@
 module ServiceFabric.Batcher(
     BatchingOptions
   , batchingService
+  , defaultBatchingOptions
 ) where
 
 import Control.Applicative
-import Control.Exception.Base(SomeException)
 import Control.Concurrent.Lifted
-import Control.Concurrent.MVar.Lifted
+import Control.Exception.Lifted
 import Control.Monad
-import Control.Monad.CatchIO
-import Control.Monad.IO.Class
+import Control.Monad.Base
 import Control.Monad.Trans.Control
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
 import Data.Foldable
 import Data.Hashable
-import Data.IORef(IORef)
 import Data.IORef.Lifted
 import ServiceFabric.Types
 
 data BatchingOptions = BatchingOptions {
-  batchWindowMs :: Int
+    batchWindowMs :: Int
 } deriving (Eq, Show)
 
-batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m) => BatchingOptions -> MultiGetService m a b -> (BasicService m a (Maybe b), MultiGetService m a b)
-batchingService options service = 
-  let emptyBatch :: RequestBatch a b
-      emptyBatch                                            = RequestBatch [] S.empty
-      makeCall :: S.HashSet a -> m (Either SomeException (M.HashMap a b))
-      makeCall requests                                     = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)
-      applyToPending :: Either SomeException (M.HashMap a b) -> PendingRequest a b -> m ()
-      applyToPending (Left e) (SingleRequest a var)         = putMVar var $ Left e
-      applyToPending (Right results) (SingleRequest a var)  = putMVar var $ Right $ M.lookup a results
-      applyToPending (Left e) (MultiRequest as var)         = putMVar var $ Left e
-      applyToPending (Right results) (MultiRequest as var)  = putMVar var $ Right $ M.filter ((flip S.member) as) results
-      processCalls :: RequestBatch a b -> m ()
-      processCalls (RequestBatch pendings requests)         = do
-                                                                result <- makeCall requests
-                                                                traverse_ (applyToPending result) pendings
-      startBatch :: IORef (RequestBatch a b) -> m ()
-      startBatch ref                                        = fmap (\_ -> ()) $ fork $ do
-                                                                                          threadDelay (1000 * batchWindowMs options)
-                                                                                          pendings <- atomicModifyIORef' ref (\p -> (emptyBatch, p))
-                                                                                          processCalls pendings
-      startBatchIfEmpty :: IORef (RequestBatch a b) -> m ()
-      startBatchIfEmpty ref                                 = readIORef ref >>= (\(RequestBatch p _) -> if null p then return () else fmap (\_ -> ()) $ startBatch ref)
-      addPending :: IORef (RequestBatch a b) -> PendingRequest a b -> m ()
-      addPending ref p@(SingleRequest request _)            = atomicModifyIORef' ref (\(RequestBatch ps rs) -> (RequestBatch (p : ps) (S.insert rs request), ()))
-      addPending ref p@(MultiRequest requests _)            = atomicModifyIORef' ref (\(RequestBatch ps rs) -> (RequestBatch (p : ps) (S.union rs requests), ()))
-      singleService :: IORef (RequestBatch a b) -> BasicService m a (Maybe b)
-      singleService ref request                             = do
-                                                                startBatchIfEmpty ref
-                                                                mvar <- newEmptyMVar
-                                                                let pending = SingleRequest request mvar
-                                                                addPending ref pending
-                                                                liftIO $ getResult mvar
-      multiService :: IORef (RequestBatch a b) -> MultiGetService m a b
-      multiService ref requests                             = do
-                                                                startBatchIfEmpty ref
-                                                                mvar <- newEmptyMVar
-                                                                let pending = MultiRequest requests mvar
-                                                                addPending ref pending
-                                                                liftIO $ getResult mvar
-  in do
-        ref <- newIORef emptyBatch
-        (singleService ref, multiService ref)
+defaultBatchingOptions :: BatchingOptions
+defaultBatchingOptions = BatchingOptions {
+   batchWindowMs = 10
+}
 
 data RequestBatch a b = RequestBatch [PendingRequest a b] (S.HashSet a)
 
@@ -75,10 +35,47 @@ data PendingRequest a b =
   SingleRequest a (ResultVar (Maybe b)) |
   MultiRequest (S.HashSet a) (ResultVar (M.HashMap a b))
 
+applyToPending :: (Eq a, Hashable a, MonadBaseControl IO m) => Either SomeException (M.HashMap a b) -> PendingRequest a b -> m ()
+applyToPending (Left e) (SingleRequest _ var)         = putMVar var $ Left e
+applyToPending (Right results) (SingleRequest a var)  = putMVar var $ Right $ M.lookup a results
+applyToPending (Left e) (MultiRequest _ var)          = putMVar var $ Left e
+applyToPending (Right results) (MultiRequest as var)  = putMVar var $ Right $ M.filterWithKey (\k -> \_ -> S.member k as) results
 
+emptyBatch :: (Eq a, Hashable a) => RequestBatch a b
+emptyBatch = RequestBatch [] S.empty
 
-{-
-If there's no waiting requests, start the background thread.
+makeCall :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> S.HashSet a -> m (Either SomeException (M.HashMap a b))
+makeCall service requests = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)      
 
+processCalls :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> RequestBatch a b -> m ()
+processCalls service (RequestBatch pendings requests) = do
+                                                          result <- makeCall service requests
+                                                          traverse_ (applyToPending result) pendings              
 
--}
+startBatch :: (Eq a, Hashable a, MonadBaseControl IO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> m ()
+startBatch options service ref = fmap (\_ -> ()) $ fork $ do
+                                                            threadDelay (1000 * batchWindowMs options)
+                                                            pendings <- atomicModifyIORef' ref (\p -> (emptyBatch, p))
+                                                            processCalls service pendings
+
+addPending :: (Eq a, Hashable a, MonadBaseControl IO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> PendingRequest a b -> m ()
+addPending options service ref p@(SingleRequest request _) = join $ atomicModifyIORef' ref (\(RequestBatch ps rs) -> (RequestBatch (p : ps) (S.insert request rs), if null ps then startBatch options service ref else return ()))
+addPending options service ref p@(MultiRequest requests _) = join $ atomicModifyIORef' ref (\(RequestBatch ps rs) -> (RequestBatch (p : ps) (S.union rs requests), if null ps then startBatch options service ref else return ()))
+
+singleService :: (Eq a, Hashable a, MonadBaseControl IO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> BasicService m a (Maybe b)
+singleService options service ref request = do
+                                              mvar <- newEmptyMVar
+                                              let pending = SingleRequest request mvar
+                                              addPending options service ref pending
+                                              getResult2 mvar
+multiService :: (Eq a, Hashable a, MonadBaseControl IO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> MultiGetService m a b
+multiService options service ref requests = do
+                                              mvar <- newEmptyMVar
+                                              let pending = MultiRequest requests mvar
+                                              addPending options service ref pending
+                                              getResult2 mvar  
+
+batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m) => BatchingOptions -> MultiGetService m a b -> m (BasicService m a (Maybe b), MultiGetService m a b)
+batchingService options service = do
+  ref <- newIORef emptyBatch
+  return (singleService options service ref, multiService options service ref)

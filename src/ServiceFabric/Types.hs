@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleContexts #-}
+
+
 module ServiceFabric.Types(
     BasicService
   , MultiGetService
@@ -5,14 +8,18 @@ module ServiceFabric.Types(
   , multiGetToBasic
   , basicToMultiGet
   , getResult
+  , getResult2
 ) where
 
 import Control.Applicative
 import Data.Hashable
 import Control.Concurrent
-import Control.Exception.Base hiding(throw)
+import qualified Control.Concurrent.MVar.Lifted as MV
+import Control.Exception.Base hiding(throw, throwIO)
+import Control.Exception.Lifted hiding(throw)
 import Control.Monad.CatchIO
 import Control.Monad.IO.Class
+import Control.Monad.Trans.Control
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
 
@@ -36,3 +43,9 @@ getResult :: (MonadCatchIO m) => ResultVar a -> m a
 getResult var = do
   result <- liftIO $ readMVar var
   either throw return result
+
+
+getResult2 :: (MonadBaseControl IO m) => ResultVar a -> m a
+getResult2 var = do
+  result <- MV.readMVar var
+  either throwIO return result
