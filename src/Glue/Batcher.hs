@@ -11,7 +11,6 @@ import Control.Applicative
 import Control.Concurrent.Lifted
 import Control.Exception.Lifted
 import Control.Monad
-import Control.Monad.Base
 import Control.Monad.Trans.Control
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
@@ -67,13 +66,13 @@ singleService options service ref request = do
                                               mvar <- newEmptyMVar
                                               let pending = SingleRequest request mvar
                                               addPending options service ref pending
-                                              getResult2 mvar
+                                              getResult mvar
 multiService :: (Eq a, Hashable a, MonadBaseControl IO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> MultiGetService m a b
 multiService options service ref requests = do
                                               mvar <- newEmptyMVar
                                               let pending = MultiRequest requests mvar
                                               addPending options service ref pending
-                                              getResult2 mvar  
+                                              getResult mvar  
 
 batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m) => BatchingOptions -> MultiGetService m a b -> m (BasicService m a (Maybe b), MultiGetService m a b)
 batchingService options service = do

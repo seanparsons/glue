@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-
 module Glue.Types(
     BasicService
   , MultiGetService
@@ -8,7 +7,6 @@ module Glue.Types(
   , multiGetToBasic
   , basicToMultiGet
   , getResult
-  , getResult2
 ) where
 
 import Control.Applicative
@@ -17,8 +15,6 @@ import Control.Concurrent
 import qualified Control.Concurrent.MVar.Lifted as MV
 import Control.Exception.Base hiding(throw, throwIO)
 import Control.Exception.Lifted hiding(throw)
-import Control.Monad.CatchIO
-import Control.Monad.IO.Class
 import Control.Monad.Trans.Control
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
@@ -39,13 +35,7 @@ basicToMultiGet service =
   in  S.foldl' callService (pure M.empty)
 
 -- Utils?
-getResult :: (MonadCatchIO m) => ResultVar a -> m a
+getResult :: (MonadBaseControl IO m) => ResultVar a -> m a
 getResult var = do
-  result <- liftIO $ readMVar var
-  either throw return result
-
-
-getResult2 :: (MonadBaseControl IO m) => ResultVar a -> m a
-getResult2 var = do
   result <- MV.readMVar var
   either throwIO return result

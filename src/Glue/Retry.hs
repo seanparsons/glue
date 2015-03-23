@@ -12,16 +12,15 @@ module Glue.Retry(
   , retryWaitTimeMultiplier
 ) where
 
-import Control.Exception.Base(SomeException)
 import Glue.Types
-import Control.Concurrent
-import Control.Monad.IO.Class
-import Control.Monad.CatchIO
+import Control.Concurrent.Lifted
+import Control.Exception.Lifted
+import Control.Monad.Trans.Control
 
 data RetryOptions a = RetryOptions {
   retryAllowed            :: a -> Bool,
   retryInitialWaitTimeMs  :: Int,
-  maximumRetries          :: Int,
+  maximumRetries          :: Int, 
   retryWaitTimeMultiplier :: Double
 }
 
@@ -34,11 +33,11 @@ defaultRetryOptions = RetryOptions {
   }
 
 -- |Retries a call to a service multiple times, potentially backing off wait times between subsequent calls.
-retryingService :: (MonadCatchIO m) => RetryOptions a -> BasicService m a b -> BasicService m a b
+retryingService :: (MonadBaseControl IO m) => RetryOptions a -> BasicService m a b -> BasicService m a b
 retryingService options service =
   let attempt retryCount request  = if (retryAllowed options) request && maxRetries > retryCount
                                       then catch (service request) (\(_ :: SomeException) -> (wait (retryCount + 1)) >> (attempt (retryCount + 1) request))
                                       else service request
       maxRetries                  = maximumRetries options
-      wait retryCount             = liftIO $ threadDelay $ round $ fromIntegral (retryInitialWaitTimeMs options) * ((retryWaitTimeMultiplier options) ^ retryCount)
+      wait retryCount             = threadDelay $ round $ fromIntegral (retryInitialWaitTimeMs options) * ((retryWaitTimeMultiplier options) ^ retryCount)
   in  attempt 0

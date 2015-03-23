@@ -23,7 +23,6 @@ library
                         lifted-base,
                         time,
                         monad-control,
-                        MonadCatchIO-mtl,
                         unordered-containers,
                         hashable
   ghc-options:          -rtsopts
