@@ -3,6 +3,8 @@
 module Glue.Types(
     BasicService
   , MultiGetService
+  , MultiGetRequest
+  , MultiGetResponse
   , ResultVar
   , multiGetToBasic
   , basicToMultiGet
@@ -20,7 +22,9 @@ import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
 
 type BasicService m a b = a -> m b
-type MultiGetService m a b = BasicService m (S.HashSet a) (M.HashMap a b)
+type MultiGetRequest a = S.HashSet a
+type MultiGetResponse a b = M.HashMap a b
+type MultiGetService m a b = BasicService m (MultiGetRequest a) (MultiGetResponse a b)
 type ResultVar a = MVar (Either SomeException a)
 
 multiGetToBasic :: (Hashable a, Eq a, Monad m) => MultiGetService m a b -> BasicService m a b

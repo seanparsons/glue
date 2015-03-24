@@ -28,11 +28,11 @@ defaultBatchingOptions = BatchingOptions {
    batchWindowMs = 10
 }
 
-data RequestBatch a b = RequestBatch [PendingRequest a b] (S.HashSet a)
+data RequestBatch a b = RequestBatch [PendingRequest a b] (MultiGetRequest a)
 
 data PendingRequest a b = 
   SingleRequest a (ResultVar (Maybe b)) |
-  MultiRequest (S.HashSet a) (ResultVar (M.HashMap a b))
+  MultiRequest (MultiGetRequest a) (ResultVar (MultiGetResponse a b))
 
 applyToPending :: (Eq a, Hashable a, MonadBaseControl IO m) => Either SomeException (M.HashMap a b) -> PendingRequest a b -> m ()
 applyToPending (Left e) (SingleRequest _ var)         = putMVar var $ Left e

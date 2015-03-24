@@ -34,6 +34,7 @@ library
 test-suite tests
   build-depends:        base ==4.*,
                         QuickCheck -any,
+                        quickcheck-instances,
                         hspec -any,
                         transformers,
                         transformers-base,
