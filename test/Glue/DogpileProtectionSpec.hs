@@ -7,9 +7,10 @@ import Data.Typeable
 import Glue.DogpileProtection
 import Test.Hspec
 import Data.IORef
-import Control.Monad.CatchIO
 import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Exception.Base hiding (throw, throwIO)
+import Control.Exception.Lifted
 import Prelude hiding (sequence)
 
 data DogpileProtectionTestException = DogpileProtectionTestException deriving (Eq, Show, Typeable)
@@ -34,7 +35,7 @@ spec = do
       (readIORef counter) `shouldReturn` 1
     it "With multiple calls to a slow failing service only one actually gets through" $ do
       counter <- newIORef (0 :: Int)
-      let service _ = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay delayTime >> throw DogpileProtectionTestException :: IO Int
+      let service _ = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay delayTime >> throwIO DogpileProtectionTestException :: IO Int
       (_, protectedService) <- dogpileProtect service
       asyncResults <- traverse (async . protectedService) requests
       let results = traverse wait asyncResults

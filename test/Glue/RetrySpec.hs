@@ -7,8 +7,8 @@ import Data.Typeable
 import Glue.Retry
 import Test.Hspec
 import Test.QuickCheck
-import Control.Exception.Base hiding (throw)
-import Control.Monad.CatchIO
+import Control.Exception.Base hiding (throw, throwIO)
+import Control.Exception.Lifted
 import Control.Monad.IO.Class
 
 newtype SmallInt = SmallInt Int deriving (Eq, Show)
@@ -30,7 +30,7 @@ spec = do
           ref <- liftIO $ newIORef 0
           let service req   = do
                                 counter <- atomicModifyIORef' ref (\c -> (c + 1, c + 1))
-                                if counter > failures then return req else throw RetryTestException
+                                if counter > failures then return req else throwIO RetryTestException
           let options       = defaultRetryOptions { maximumRetries = retries }
           let retryService  = retryingService options service
           let successCase   = (retryService request) `shouldReturn` (request :: Int)

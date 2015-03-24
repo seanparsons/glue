@@ -17,7 +17,6 @@ library
   -- other-modules:       
   -- other-extensions:    
   build-depends:        base >=4.6 && <4.8,
-                        lrucache,
                         transformers,
                         transformers-base,
                         lifted-base,
@@ -36,13 +35,11 @@ test-suite tests
   build-depends:        base ==4.*,
                         QuickCheck -any,
                         hspec -any,
-                        lrucache,
                         transformers,
                         transformers-base,
                         lifted-base,
                         time,
                         monad-control,
-                        MonadCatchIO-mtl,
                         unordered-containers,
                         hashable,
                         async
