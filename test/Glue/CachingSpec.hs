@@ -16,7 +16,7 @@ instance Exception CachingTestException
 
 spec :: Spec
 spec = do
-  describe "cacheWith" $ do
+  describe "cacheWithBasic" $ do
     it "For a second request, the value comes from the cache" $ do
       property $ \(request :: Int, result :: Int) -> do
         ref <- newIORef (0 :: Int)
@@ -27,7 +27,7 @@ spec = do
         cache <- newIORef M.empty
         let lookupWith r = fmap (M.lookup r) $ readIORef cache
         let insertWith req resp = atomicModifyIORef' cache (\c -> (M.insert req resp c, ()))
-        let cachedService = cacheWith lookupWith insertWith service
+        let cachedService = cacheWithBasic lookupWith insertWith service
         (cachedService request) `shouldReturn` result
         (cachedService request) `shouldReturn` result
 
