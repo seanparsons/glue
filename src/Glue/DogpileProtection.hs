@@ -16,7 +16,7 @@ import Glue.Types
 -- Loses the values held within m.
 -- Should make this return just BasicService, hiding the HashMap.
 -- Need sharding support.
-dogpileProtect :: (MonadBaseControl IO m, Eq a, Hashable a) => BasicService m a b -> m (IORef (M.HashMap a (ResultVar b)), BasicService m a b)
+dogpileProtect :: (MonadBaseControl IO m, MonadBaseControl IO n, Eq a, Hashable a) => BasicService m a b -> n (IORef (M.HashMap a (ResultVar b)), BasicService m a b)
 dogpileProtect service = do
   mapRef <- newIORef M.empty
   let protectedService request = do

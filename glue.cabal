@@ -23,7 +23,9 @@ library
                         time,
                         monad-control,
                         unordered-containers,
-                        hashable
+                        hashable,
+                        ekg-core,
+                        text
   ghc-options:          -rtsopts
                         -Wall
                         -O2
@@ -43,6 +45,8 @@ test-suite tests
                         monad-control,
                         unordered-containers,
                         hashable,
+                        ekg-core,
+                        text,
                         async
   ghc-options:          -rtsopts
                         -Wall

@@ -36,7 +36,7 @@ data CircuitBreakerException = CircuitBreakerException String deriving (Eq, Show
 instance Exception CircuitBreakerException
 
 -- TODO: Check that values within m aren't lost on a successful call.
-circuitBreaker :: (MonadBaseControl IO m) => CircuitBreakerOptions -> BasicService m a b -> m (IORef CircuitBreakerStatus, BasicService m a b)
+circuitBreaker :: (MonadBaseControl IO m, MonadBaseControl IO n) => CircuitBreakerOptions -> BasicService m a b -> n (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftBase $ round `fmap` getPOSIXTime
       failureMax                  = maxBreakerFailures options

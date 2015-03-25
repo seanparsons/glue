@@ -74,7 +74,7 @@ multiService options service ref requests = do
                                               addPending options service ref pending
                                               getResult mvar  
 
-batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m) => BatchingOptions -> MultiGetService m a b -> m (BasicService m a (Maybe b), MultiGetService m a b)
+batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m, MonadBaseControl IO n) => BatchingOptions -> MultiGetService m a b -> n (BasicService m a (Maybe b), MultiGetService m a b)
 batchingService options service = do
   ref <- newIORef emptyBatch
   return (singleService options service ref, multiService options service ref)
