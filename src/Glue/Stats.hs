@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | Module supporting the recording of various stats about a service using "System.Metrics". 
 module Glue.Stats(
     recordDistribution
   , recordAttempts
@@ -26,7 +27,12 @@ currentTime = do
                 time <- liftBase $ getPOSIXTime
                 return $ realToFrac time
 
-recordDistribution :: (MonadBaseControl IO m, MonadBaseControl IO n) => Store -> Text -> BasicService m a b -> n (BasicService m a b)
+-- | Record the timings for service invocations with a 'Distribution' held in the passed in 'Store'..
+recordDistribution :: (MonadBaseControl IO m, MonadBaseControl IO n)
+                   => Store                   -- ^ 'Store' where the 'Distribution' will reside.
+                   -> Text                    -- ^ The name to associate the 'Distribution' with.
+                   -> BasicService m a b      -- ^ Base service to record stats for.
+                   -> n (BasicService m a b)
 recordDistribution store name service = do
   dist <- liftBase $ createDistribution name store
   let timedService req = do
@@ -37,7 +43,12 @@ recordDistribution store name service = do
                             finally (service req) recordTime 
   return timedService
 
-recordAttempts :: (MonadBaseControl IO m, MonadBaseControl IO n) => Store -> Text -> BasicService m a b -> n (BasicService m a b)
+-- | Increments a counter with a 'Counter' held in the passed in 'Store' for each time the service is called.
+recordAttempts :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+               => Store                   -- ^ 'Store' where the 'Counter' will reside.
+               -> Text                    -- ^ The name to associate the 'Counter' with.
+               -> BasicService m a b      -- ^ Base service to record stats for.
+               -> n (BasicService m a b)
 recordAttempts store name service = do
   counter <- liftBase $ createCounter name store
   let countedService req = do
@@ -45,8 +56,12 @@ recordAttempts store name service = do
                               service req
   return countedService
 
-
-recordSuccesses :: (MonadBaseControl IO m, MonadBaseControl IO n) => Store -> Text -> BasicService m a b -> n (BasicService m a b)
+-- | Increments a counter with a 'Counter' held in the passed in 'Store' for each time the service successfully returns.
+recordSuccesses :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+                => Store                   -- ^ 'Store' where the 'Counter' will reside.
+                -> Text                    -- ^ The name to associate the 'Counter' with.
+                -> BasicService m a b      -- ^ Base service to record stats for.
+                -> n (BasicService m a b)
 recordSuccesses store name service = do
   counter <- liftBase $ createCounter name store
   let countedService req = do
@@ -55,13 +70,23 @@ recordSuccesses store name service = do
                               return result
   return countedService
 
-recordFailures :: (MonadBaseControl IO m, MonadBaseControl IO n) => Store -> Text -> BasicService m a b -> n (BasicService m a b)
+-- | Increments a counter with a 'Counter' held in the passed in 'Store' for each time the service fails.
+recordFailures :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+               => Store                   -- ^ 'Store' where the 'Counter' will reside.
+               -> Text                    -- ^ The name to associate the 'Counter' with.
+               -> BasicService m a b      -- ^ Base service to record stats for.
+               -> n (BasicService m a b)
 recordFailures store name service = do
   counter <- liftBase $ createCounter name store
   let countedService req = onException (service req) (liftBase $ MC.inc counter)
   return countedService
 
-recordLastRequest :: (MonadBaseControl IO m, MonadBaseControl IO n, Show a) => Store -> Text -> BasicService m a b -> n (BasicService m a b)
+-- | Sets a 'Label' held in the passed in 'Store' for each request the service receives.
+recordLastRequest :: (MonadBaseControl IO m, MonadBaseControl IO n, Show a) 
+                  => Store                   -- ^ 'Store' where the 'Label' will reside.
+                  -> Text                    -- ^ The name to associate the 'Label' with.
+                  -> BasicService m a b      -- ^ Base service to record stats for.
+                  -> n (BasicService m a b)
 recordLastRequest store name service = do
   label <- liftBase $ createLabel name store
   let requestRecordingService req = do
@@ -69,7 +94,12 @@ recordLastRequest store name service = do
                                       service req
   return requestRecordingService
 
-recordLastResult :: (MonadBaseControl IO m, MonadBaseControl IO n, Show b) => Store -> Text -> BasicService m a b -> n (BasicService m a b)
+-- | Sets a 'Label' held in the passed in 'Store' for each successful result the service returns.
+recordLastResult :: (MonadBaseControl IO m, MonadBaseControl IO n, Show b) 
+                 => Store                   -- ^ 'Store' where the 'Label' will reside.
+                 -> Text                    -- ^ The name to associate the 'Label' with.
+                 -> BasicService m a b      -- ^ Base service to record stats for.
+                 -> n (BasicService m a b)
 recordLastResult store name service = do
   label <- liftBase $ createLabel name store
   let resultRecordingService req = do

@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
+-- | Module containing the root types and some support functionality.
 module Glue.Types(
     BasicService
   , MultiGetService
@@ -21,24 +22,31 @@ import Control.Monad.Trans.Control
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
 
+-- | Type alias for the most basic form of a service supported.
 type BasicService m a b = a -> m b
+-- | Type aliss for the request portion of a `MultiGetService`.
 type MultiGetRequest a = S.HashSet a
+-- | Type aliss for the response portion of a `MultiGetService`.
 type MultiGetResponse a b = M.HashMap a b
+-- | Type aliss for a service that looks up multiple values and returns multiple results.
 type MultiGetService m a b = BasicService m (MultiGetRequest a) (MultiGetResponse a b)
+-- | Type alias for the common container of a result used in asynchronous calls.
 type ResultVar a = MVar (Either SomeException a)
 
+-- | Convert a 'MultiGetService' into a 'BasicService' that looks up a single key, failing if the key isn't found in the resultant mapping.
 multiGetToBasic :: (Hashable a, Eq a, Monad m) => MultiGetService m a b -> BasicService m a b
 multiGetToBasic service = (\r -> do
   mapResult <- service (S.singleton r)
   let possibleResult = M.lookup r mapResult
   maybe (fail "Invalid result.") return possibleResult)
 
+-- | Convert a 'BasicService' into a 'MultiGetService'
 basicToMultiGet :: (Hashable a, Eq a, Applicative m) => BasicService m a b -> MultiGetService m a b
 basicToMultiGet service = 
   let callService resultMap request    = liftA2 (flip $ M.insert request) resultMap (service request)
   in  S.foldl' callService (pure M.empty)
 
--- Utils?
+-- | Obtain a result from a 'ResultVar' in the 'Monad' of your choice.
 getResult :: (MonadBaseControl IO m) => ResultVar a -> m a
 getResult var = do
   result <- MV.readMVar var
