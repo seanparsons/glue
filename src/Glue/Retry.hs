@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
+-- | Module containing retry functionality, allowing the construction of services that attempt multiple times in case of transient failure.
 module Glue.Retry(
     RetryOptions
   , defaultRetryOptions
@@ -17,13 +18,15 @@ import Control.Concurrent.Lifted
 import Control.Exception.Lifted
 import Control.Monad.Trans.Control
 
+-- | Options for determining behaviour of retrying services.
 data RetryOptions a = RetryOptions {
-  retryAllowed            :: a -> Bool,
-  retryInitialWaitTimeMs  :: Int,
-  maximumRetries          :: Int, 
-  retryWaitTimeMultiplier :: Double
+  retryAllowed            :: a -> Bool,   -- ^ Predicate for determining if we can retry a call, can be used to prevent retries on non-idempotent operations.
+  retryInitialWaitTimeMs  :: Int,         -- ^ Amount of time to wait after the first failure.
+  maximumRetries          :: Int,         -- ^ The upper bound on how many attempts to make when invoking the service.
+  retryWaitTimeMultiplier :: Double       -- ^ How much to multiply 'retryInitialWaitTimeMs' by for each number of times the service has retried.
 }
 
+-- | Defaulted options for retrying 3 times with no wait time.
 defaultRetryOptions :: RetryOptions a
 defaultRetryOptions = RetryOptions { 
     retryAllowed            = (\_ -> True)
@@ -32,8 +35,11 @@ defaultRetryOptions = RetryOptions {
   , retryWaitTimeMultiplier = 0
   }
 
--- |Retries a call to a service multiple times, potentially backing off wait times between subsequent calls.
-retryingService :: (MonadBaseControl IO m) => RetryOptions a -> BasicService m a b -> BasicService m a b
+-- | Retries a call to a service multiple times, potentially backing off wait times between subsequent calls.
+retryingService :: (MonadBaseControl IO m) 
+                => RetryOptions a             -- ^ Instance of 'RetryOptions' to configure the retry functionality.
+                -> BasicService m a b         -- ^ The service to perform retries of.
+                -> BasicService m a b
 retryingService options service =
   let attempt retryCount request  = if (retryAllowed options) request && maxRetries > retryCount
                                       then catch (service request) (\(_ :: SomeException) -> (wait (retryCount + 1)) >> (attempt (retryCount + 1) request))

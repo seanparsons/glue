@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | Module that re-exports the entirety of the library.
 module Glue
   ( module Glue.Types
   , module Glue.Failover

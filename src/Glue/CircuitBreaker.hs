@@ -2,6 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
+-- | Module containing circuit breaker functionality, which is the ability to open a circuit once a number of failures have occurred, thereby preventing later calls from attempting to make unsuccessful calls.
+-- | Often this is useful if the underlying service were to repeatedly time out, so as to reduce the number of calls inflight holding up upstream callers.
 module Glue.CircuitBreaker(
     CircuitBreakerOptions
   , CircuitBreakerStatus
@@ -21,12 +23,14 @@ import Data.Time.Clock.POSIX
 import Data.Typeable
 import Glue.Types
 
+-- | Options for determining behaviour of circuit breaking services.
 data CircuitBreakerOptions = CircuitBreakerOptions {
-    maxBreakerFailures  :: Int
-  , resetTimeoutSecs    :: Int
-  , breakerDescription  :: String
+    maxBreakerFailures  :: Int        -- ^ How many times the underlying service must fail in the given window before the circuit opens.
+  , resetTimeoutSecs    :: Int        -- ^ The window of time in which the underlying service must fail for the circuit to open.
+  , breakerDescription  :: String     -- ^ Description that is attached to the failure so as to identify the particular circuit.
 }
 
+-- | Defaulted options for the circuit breaker with 3 failures over 60 seconds.
 defaultCircuitBreakerOptions :: CircuitBreakerOptions
 defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, resetTimeoutSecs = 60, breakerDescription = "Circuit breaker open." }
 
@@ -36,6 +40,7 @@ data CircuitBreakerException = CircuitBreakerException String deriving (Eq, Show
 instance Exception CircuitBreakerException
 
 -- TODO: Check that values within m aren't lost on a successful call.
+-- | Circuit breaking services can be constructed with this function.
 circuitBreaker :: (MonadBaseControl IO m, MonadBaseControl IO n) => CircuitBreakerOptions -> BasicService m a b -> n (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftBase $ round `fmap` getPOSIXTime
