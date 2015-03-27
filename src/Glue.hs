@@ -35,6 +35,8 @@ Done:
 - Performance stats.
 
 Todo:
+- Switching service, allowing different implementations to be switched in and out at runtime.
+- Routing service? Possibly something akin to HTTP routing in a lot of web frameworks.
 - Request duplication, with completion based on the first successful result.
 - Graceful service shutdown, reject new requests with a default value, wait for a period of time while existing requests continue. Then possibly a cancel action?
 - Caching that supports refreshing invisibly to the consumer?
