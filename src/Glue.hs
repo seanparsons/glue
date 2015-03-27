@@ -24,6 +24,7 @@ import Glue.Batcher
 import Glue.Stats
 
 {-
+Done:
 - Caching.
 - Fail fast/circuit breaker.
 - Failover.
@@ -31,9 +32,9 @@ import Glue.Stats
 - Timeouts.
 - Retries.
 - Multi-get optimisations.
+- Performance stats.
 
-- Performance stats, T-Digest maybe? Doesn't appear that the statistics package supports percentiles, but it's hard to tell.
-  Or we should just shunt this into the capable hands of ekg.
+Todo:
 - Request duplication, with completion based on the first successful result.
 - Graceful service shutdown, reject new requests with a default value, wait for a period of time while existing requests continue. Then possibly a cancel action?
 - Caching that supports refreshing invisibly to the consumer?
