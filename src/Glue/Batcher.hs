@@ -1,10 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | Module for creating a service that batches calls across requests.
 module Glue.Batcher(
     BatchingOptions
   , batchingService
   , defaultBatchingOptions
+  , batchWindowMs
 ) where
 
 import Control.Applicative
@@ -19,17 +21,21 @@ import Data.Hashable
 import Data.IORef.Lifted
 import Glue.Types
 
+-- | Options for configuring the batching. 
 data BatchingOptions = BatchingOptions {
-    batchWindowMs :: Int
+    batchWindowMs :: Int           -- ^ Window in milliseconds over which to batch.
 } deriving (Eq, Show)
 
+-- | Default instance of 'BatchingOptions' with a batching window of 10ms.
 defaultBatchingOptions :: BatchingOptions
 defaultBatchingOptions = BatchingOptions {
    batchWindowMs = 10
 }
 
+-- | Cumulative request batch of all the outstanding calls.
 data RequestBatch a b = RequestBatch [PendingRequest a b] (MultiGetRequest a)
 
+-- | Individual request to satisfy, for either a single key or a multi request.
 data PendingRequest a b = 
   SingleRequest a (ResultVar (Maybe b)) |
   MultiRequest (MultiGetRequest a) (ResultVar (MultiGetResponse a b))
@@ -74,7 +80,11 @@ multiService options service ref requests = do
                                               addPending options service ref pending
                                               getResult mvar  
 
-batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m, MonadBaseControl IO n) => BatchingOptions -> MultiGetService m a b -> n (BasicService m a (Maybe b), MultiGetService m a b)
+-- | Function for constructing a batching service.
+batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m, MonadBaseControl IO n)
+                => BatchingOptions            -- ^ Options to configure the batched service.
+                -> MultiGetService m a b      -- ^ Service around which to batch requests.
+                -> n (BasicService m a (Maybe b), MultiGetService m a b)
 batchingService options service = do
   ref <- newIORef emptyBatch
   return (singleService options service ref, multiService options service ref)

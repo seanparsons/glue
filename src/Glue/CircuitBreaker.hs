@@ -34,14 +34,19 @@ data CircuitBreakerOptions = CircuitBreakerOptions {
 defaultCircuitBreakerOptions :: CircuitBreakerOptions
 defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, resetTimeoutSecs = 60, breakerDescription = "Circuit breaker open." }
 
+-- | Status indicating if the circuit is open.
 data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
 
+-- | Exception thrown when the circuit is open.
 data CircuitBreakerException = CircuitBreakerException String deriving (Eq, Show, Typeable)
 instance Exception CircuitBreakerException
 
 -- TODO: Check that values within m aren't lost on a successful call.
 -- | Circuit breaking services can be constructed with this function.
-circuitBreaker :: (MonadBaseControl IO m, MonadBaseControl IO n) => CircuitBreakerOptions -> BasicService m a b -> n (IORef CircuitBreakerStatus, BasicService m a b)
+circuitBreaker :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+               => CircuitBreakerOptions       -- ^ Options for specifying the circuit breaker behaviour.
+               -> BasicService m a b          -- ^ Service to protect with the circuit breaker.
+               -> n (IORef CircuitBreakerStatus, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftBase $ round `fmap` getPOSIXTime
       failureMax                  = maxBreakerFailures options

@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | Module supporting the dogpile protection of a service, see <http://en.wikipedia.org/wiki/Cache_stampede http://en.wikipedia.org/wiki/Cache_stampede>.
 module Glue.DogpileProtection(
   dogpileProtect
 ) where
@@ -13,10 +14,12 @@ import qualified Data.HashMap.Strict as M
 import Data.IORef.Lifted
 import Glue.Types
 
--- Loses the values held within m.
--- Should make this return just BasicService, hiding the HashMap.
--- Need sharding support.
-dogpileProtect :: (MonadBaseControl IO m, MonadBaseControl IO n, Eq a, Hashable a) => BasicService m a b -> n (IORef (M.HashMap a (ResultVar b)), BasicService m a b)
+-- TODO: Should make this return just BasicService, hiding the HashMap.
+-- | Dogpile protection of a service, to prevent multiple calls for the same value being submitted.
+-- | Loses the values held within m.
+dogpileProtect :: (MonadBaseControl IO m, MonadBaseControl IO n, Eq a, Hashable a) 
+               => BasicService m a b   -- ^ The service to protect.
+               -> n (IORef (M.HashMap a (ResultVar b)), BasicService m a b)
 dogpileProtect service = do
   mapRef <- newIORef M.empty
   let protectedService request = do
