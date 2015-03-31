@@ -35,6 +35,7 @@ runTest store name shouldBatch = do
   (mapConcurrently possiblyBatchedService requests)
   printStats store name
 
+-- Tests the batchingService by comparing the stats with and without it.
 main :: IO ()
 main = do
   store <- newStore
