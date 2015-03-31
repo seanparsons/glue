@@ -11,13 +11,14 @@ import System.Metrics
 import qualified System.Metrics.Distribution as D
 import qualified Data.HashSet as S
 import qualified Data.HashMap.Strict as M
+import Text.Printf
 
 printStats :: Store -> Text -> IO ()
 printStats store name = do
   samples <- sampleAll store
   let possibleValue = M.lookup name samples
   case possibleValue of
-                        (Just (Distribution stats)) -> putStr "Sum service time for " >> (putStr $ unpack name) >> putStr ": " >> (print $ D.sum stats)
+                        (Just (Distribution stats)) -> printf "%s - sum : %f - count : %d" (unpack name) (D.sum stats) (D.count stats) >> putStrLn ""
                         otherwise                   -> return ()
 
 runTest :: Store -> Text -> Bool -> IO ()
