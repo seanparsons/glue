@@ -17,6 +17,15 @@ source-repository head
 
 library
   exposed-modules:      Glue
+                        Glue.Types
+                        Glue.Failover
+                        Glue.Caching
+                        Glue.CircuitBreaker
+                        Glue.DogpileProtection
+                        Glue.Timeout
+                        Glue.Retry
+                        Glue.Batcher
+                        Glue.Stats
   -- other-modules:       
   -- other-extensions:    
   build-depends:        base ==4.*,
