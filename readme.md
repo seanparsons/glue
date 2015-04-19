@@ -11,17 +11,20 @@ Examples
 Batching
 --------
 
-In an active service lots of calls would be being made simultaneously to look different instances of the same thing. For instance in a social network there may be another service that returns user records. Rather than 200 requests all incurring individual HTTP requests for a single user, it would likely be more efficient to capture multiple calls and dispatch them as one multi-get call.
+In a social network there may be another service that returns user records, if this social network is really busy it would likely be more efficient to capture multiple calls and dispatch them as one multi-get call.
 
-The batchingService function creates both single and multi-get calls (hence the "fmap snd" below), which accumulate requests over a user defined window in time and dispatch them once that window has passed from the first request coming in that triggers it.
+The batchingService function creates both single and multi-get calls (hence the "fmap snd" below), which accumulate requests over a user defined window in time and dispatch them once that window has passed.
 
 ```haskell
 data User = User Int String
 
+makeUser :: Int -> User
+makeUser userId = User userId ("User " ++ (show userId))
+
 userService :: S.HashSet Int -> IO (M.HashMap Int User)
 userService request = do
   threadDelay 500
-  return $ M.fromList $ fmap (\r -> (r, User r ("User " ++ (show r)))) $ S.toList request
+  return $ M.fromList $ fmap (\r -> (r, makeUser r)) $ S.toList request
 
 batchedUserService :: IO (S.HashSet Int -> IO (M.HashMap Int User))
 batchedUserService = fmap snd $ batchingService defaultBatchingOptions userService
