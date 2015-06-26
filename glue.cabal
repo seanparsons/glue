@@ -28,7 +28,7 @@ library
                         Glue.Stats
   -- other-modules:
   -- other-extensions:
-  build-depends:        base >=4.6 && <=4.8,
+  build-depends:        base >=4.6 && <4.9,
                         transformers,
                         transformers-base,
                         lifted-base,
