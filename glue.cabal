@@ -8,7 +8,7 @@ author:                 Sean Parsons
 maintainer:             github@futurenotfound.com
 category:               Network
 build-type:             Simple
--- extra-source-files:  
+-- extra-source-files:
 cabal-version:          >=1.10
 
 source-repository head
@@ -26,9 +26,9 @@ library
                         Glue.Retry
                         Glue.Batcher
                         Glue.Stats
-  -- other-modules:       
-  -- other-extensions:    
-  build-depends:        base ==4.*,
+  -- other-modules:
+  -- other-extensions:
+  build-depends:        base >=4.6 && <=4.8,
                         transformers,
                         transformers-base,
                         lifted-base,
