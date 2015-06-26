@@ -1,5 +1,5 @@
 name:                   glue
-version:                0.1.0.0
+version:                0.1.1.0
 synopsis:               Make better services.
 description:            Implements common patterns used in building services that run smoothly and efficiently.
 license:                BSD3
