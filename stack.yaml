@@ -1,0 +1,6 @@
+flags: {}
+packages:
+- '.'
+extra-deps:
+- ekg-core-0.1.0.4
+resolver: nightly-2015-06-28

@@ -1,5 +1,5 @@
 name:                   glue
-version:                0.1.1.0
+version:                0.1.1.1
 synopsis:               Make better services.
 description:            Implements common patterns used in building services that run smoothly and efficiently.
 license:                BSD3
@@ -26,7 +26,6 @@ library
                         Glue.Retry
                         Glue.Batcher
                         Glue.Stats
-  -- other-modules:
   -- other-extensions:
   build-depends:        base >=4.6 && <4.9,
                         transformers,
@@ -36,7 +35,7 @@ library
                         monad-control,
                         unordered-containers,
                         hashable,
-                        ekg-core,
+                        ekg-core >=0.1.0.4 && <1,
                         text
   ghc-options:          -rtsopts
                         -Wall
@@ -76,6 +75,16 @@ test-suite tests
                         ekg-core,
                         text,
                         async
+  other-modules:        Glue.CachingSpec
+                        Glue.FailoverSpec
+                        Glue.RetrySpec
+                        Glue.DogpileProtectionSpec
+                        Glue.Testing
+                        Glue.TimeoutSpec
+                        Glue.StatsSpec
+                        Glue.CircuitBreakerSpec
+                        Glue.BatcherSpec
+                        Spec
   ghc-options:          -rtsopts
                         -Wall
                         -O2
