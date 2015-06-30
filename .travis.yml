@@ -41,5 +41,11 @@ script:
  - cabal sdist
 
  # check that the generated source-distribution can be built & installed
- - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
-   (cd dist && cabal test "$SRC_TGZ")
+ - PACKAGE_AND_VER=$(cabal info . | awk '{print $2;exit}')
+ - SRC_TGZ="$PACKAGE_AND_VER.tar.gz"
+ - cd dist
+ - tar -zxvf "$SRC_TGZ"
+ - cd $PACKAGE_AND_VER
+ - cabal configure --enable-tests
+ - cabal build
+ - cabal test
