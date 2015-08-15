@@ -9,7 +9,7 @@ module Glue.Batcher(
   , batchWindowMs
 ) where
 
-import Control.Applicative()
+import Control.Applicative
 import Control.Concurrent.Lifted
 import Control.Exception.Lifted
 import Control.Monad
