@@ -9,7 +9,7 @@ module Glue.Batcher(
   , batchWindowMs
 ) where
 
-import Control.Applicative
+import Control.Applicative()
 import Control.Concurrent.Lifted
 import Control.Exception.Lifted
 import Control.Monad
@@ -48,9 +48,6 @@ applyToPending (Right results) (MultiRequest as var)  = putMVar var $ Right $ M.
 
 emptyBatch :: (Eq a, Hashable a) => RequestBatch a b
 emptyBatch = RequestBatch [] S.empty
-
-makeCall :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> S.HashSet a -> m (Either SomeException (M.HashMap a b))
-makeCall service requests = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)      
 
 processCalls :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> RequestBatch a b -> m ()
 processCalls service (RequestBatch pendings requests) = do

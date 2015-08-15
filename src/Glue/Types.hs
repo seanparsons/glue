@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module containing the root types and some support functionality.
 module Glue.Types(
@@ -10,13 +11,14 @@ module Glue.Types(
   , multiGetToBasic
   , basicToMultiGet
   , getResult
+  , makeCall
 ) where
 
 import Control.Applicative
 import Data.Hashable
 import Control.Concurrent
 import qualified Control.Concurrent.MVar.Lifted as MV
-import Control.Exception.Base hiding(throw, throwIO)
+import Control.Exception.Base hiding(throw, throwIO, catch)
 import Control.Exception.Lifted hiding(throw)
 import Control.Monad.Trans.Control
 import qualified Data.HashSet as S
@@ -50,3 +52,7 @@ getResult :: (MonadBaseControl IO m) => ResultVar a -> m a
 getResult var = do
   result <- MV.readMVar var
   either throwIO return result
+
+-- | Makes a multi-get call and handles the error bundling it up inside an 'Either'.
+makeCall :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> S.HashSet a -> m (Either SomeException (M.HashMap a b))
+makeCall service requests = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)      

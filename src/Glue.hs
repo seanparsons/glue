@@ -12,6 +12,7 @@ module Glue
   , module Glue.Retry
   , module Glue.Batcher
   , module Glue.Stats
+  , module Glue.Preload
 ) where
 
 import Glue.Types
@@ -23,6 +24,7 @@ import Glue.Timeout
 import Glue.Retry
 import Glue.Batcher
 import Glue.Stats
+import Glue.Preload
 
 {-
 Done:

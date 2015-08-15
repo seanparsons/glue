@@ -2,7 +2,7 @@
 
 module Glue.CircuitBreakerSpec where
 
-import Data.Traversable
+import Data.Traversable()
 import Data.Typeable
 import Glue.CircuitBreaker
 import Test.Hspec
