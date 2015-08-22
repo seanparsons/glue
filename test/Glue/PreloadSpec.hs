@@ -20,7 +20,7 @@ spec = do
     it "Requests should work the same regardless of whether or not parts are preloaded" $ do
       property $ \(preload :: S.HashSet Int, nonPreload :: S.HashSet Int) -> do
         let service = (return . serviceFunctionality) :: MultiGetService IO Int Int
-        (preloadedService, disable) <- preloadingService (defaultPreloadedOptions preload) service
+        (preloadedService, disable) <- preloadingService (defaultPreloadedOptions preload id) service
         let expectedResults = serviceFunctionality (S.union preload nonPreload)
         actualResults <- preloadedService (S.union preload nonPreload)
         disable ()
@@ -31,7 +31,7 @@ spec = do
         let service rs = do
                             _ <- tryPutMVar preloadCheck ()
                             return $ serviceFunctionality rs
-        (preloadedService, disable) <- preloadingService (defaultPreloadedOptions preload) service
+        (preloadedService, disable) <- preloadingService (defaultPreloadedOptions preload id) service
         takeMVar preloadCheck
         let expectedResults = serviceFunctionality (S.union preload nonPreload)
         actualResults <- preloadedService (S.union preload nonPreload)

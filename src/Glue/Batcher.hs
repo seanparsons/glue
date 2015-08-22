@@ -21,7 +21,7 @@ import Data.Hashable
 import Data.IORef.Lifted
 import Glue.Types
 
--- | Options for configuring the batching. 
+-- | Options for configuring the batching.
 data BatchingOptions = BatchingOptions {
     batchWindowMs :: Int           -- ^ Window in milliseconds over which to batch.
 } deriving (Eq, Show)
@@ -36,7 +36,7 @@ defaultBatchingOptions = BatchingOptions {
 data RequestBatch a b = RequestBatch [PendingRequest a b] (MultiGetRequest a)
 
 -- | Individual request to satisfy, for either a single key or a multi request.
-data PendingRequest a b = 
+data PendingRequest a b =
   SingleRequest a (ResultVar (Maybe b)) |
   MultiRequest (MultiGetRequest a) (ResultVar (MultiGetResponse a b))
 
@@ -52,7 +52,7 @@ emptyBatch = RequestBatch [] S.empty
 processCalls :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> RequestBatch a b -> m ()
 processCalls service (RequestBatch pendings requests) = do
                                                           result <- makeCall service requests
-                                                          traverse_ (applyToPending result) pendings              
+                                                          traverse_ (applyToPending result) pendings
 
 startBatch :: (Eq a, Hashable a, MonadBaseControl IO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> m ()
 startBatch options service ref = fmap (\_ -> ()) $ fork $ do
@@ -75,7 +75,7 @@ multiService options service ref requests = do
                                               mvar <- newEmptyMVar
                                               let pending = MultiRequest requests mvar
                                               addPending options service ref pending
-                                              getResult mvar  
+                                              getResult mvar
 
 -- | Function for constructing a batching service.
 batchingService :: (Eq a, Hashable a, MonadBaseControl IO m, Applicative m, MonadBaseControl IO n)
