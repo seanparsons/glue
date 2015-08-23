@@ -43,7 +43,7 @@ multiGetToBasic service = (\r -> do
 
 -- | Convert a 'BasicService' into a 'MultiGetService'
 basicToMultiGet :: (Hashable a, Eq a, Applicative m) => BasicService m a b -> MultiGetService m a b
-basicToMultiGet service = 
+basicToMultiGet service =
   let callService resultMap request = liftA2 (flip $ M.insert request) resultMap (service request)
   in  S.foldl' callService (pure M.empty)
 
@@ -55,4 +55,4 @@ getResult var = do
 
 -- | Makes a multi-get call and handles the error bundling it up inside an 'Either'.
 makeCall :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> S.HashSet a -> m (Either SomeException (M.HashMap a b))
-makeCall service requests = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)      
+makeCall service requests = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)

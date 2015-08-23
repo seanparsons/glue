@@ -37,8 +37,7 @@ library
                         unordered-containers,
                         hashable,
                         ekg-core >=0.1.0.4 && <1,
-                        text,
-                        monad-loops
+                        text
   ghc-options:          -rtsopts
                         -Wall
   hs-source-dirs:       src
@@ -77,7 +76,6 @@ test-suite tests
                         hashable,
                         ekg-core,
                         text,
-                        monad-loops,
                         async
   other-modules:        Glue.CachingSpec
                         Glue.FailoverSpec
