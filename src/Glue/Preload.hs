@@ -65,7 +65,7 @@ waitForResult stateRef = do
                                           PreloadedFinished                       -> throwIO $ AssertionFailed "Invalid State"
 
 -- | Preloads the results of calls for given keys.
-preloadingService :: forall m n a b . (MonadIO m, MonadBaseControl IO m, MonadBaseControl IO n, Eq a, Hashable a)
+preloadingService :: forall m n a b . (MonadIO m, MonadBaseControl IO m, MonadBaseControl IO n, Eq a, Hashable a, Show a)
                   => PreloadedOptions a          -- ^ Instance of 'PreloadedOptions' to configure the preloading functionality.
                   -> MultiGetService m a b       -- ^ The service to perform preloading of.
                   -> n (MultiGetService m a b, () -> n ())
