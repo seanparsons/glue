@@ -37,11 +37,11 @@ Done:
 - Multi-get optimisations.
 - Performance stats.
 - Preloading.
+- Switching.
 
 Todo:
 - Load balancer, maybe just a simple round robin to start with.
 - Concurrent request constraint, possibly X inflight and Y queued.
-- Switching service, allowing different implementations to be switched in and out at runtime.
 - Routing service? Possibly something akin to HTTP routing in a lot of web frameworks.
 - Request duplication, with completion based on the first successful result.
 - Graceful service shutdown, reject new requests with a default value, wait for a period of time while existing requests continue. Then possibly a cancel action?

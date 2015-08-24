@@ -12,8 +12,8 @@ extra-source-files:     readme.md
 cabal-version:          >=1.10
 
 source-repository head
-  type:                git
-  location:            git://github.com/seanparsons/glue.git
+  type:                 git
+  location:             git://github.com/seanparsons/glue.git
 
 library
   exposed-modules:      Glue
@@ -27,6 +27,7 @@ library
                         Glue.Batcher
                         Glue.Stats
                         Glue.Preload
+                        Glue.Switching
   -- other-extensions:
   build-depends:        base >=4.6 && <4.9,
                         transformers,
