@@ -28,7 +28,7 @@ data RetryOptions a = RetryOptions {
 
 -- | Defaulted options for retrying 3 times with no wait time.
 defaultRetryOptions :: RetryOptions a
-defaultRetryOptions = RetryOptions { 
+defaultRetryOptions = RetryOptions {
     retryAllowed            = (\_ -> True)
   , retryInitialWaitTimeMs  = 0
   , maximumRetries          = 3
@@ -36,7 +36,7 @@ defaultRetryOptions = RetryOptions {
   }
 
 -- | Retries a call to a service multiple times, potentially backing off wait times between subsequent calls.
-retryingService :: (MonadBaseControl IO m) 
+retryingService :: (MonadBaseControl IO m)
                 => RetryOptions a             -- ^ Instance of 'RetryOptions' to configure the retry functionality.
                 -> BasicService m a b         -- ^ The service to perform retries of.
                 -> BasicService m a b
