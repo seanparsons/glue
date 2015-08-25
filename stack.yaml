@@ -1,6 +1,9 @@
 flags: {}
 packages:
-- '.'
+- './glue-common'
+- './glue-core'
+- './glue-ekg'
+- './glue-example'
 extra-deps:
 - ekg-core-0.1.0.4
 - hspec-2.1.10

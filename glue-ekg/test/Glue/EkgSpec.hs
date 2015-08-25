@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
 
-module Glue.StatsSpec where
+module Glue.EkgSpec where
 
 import Data.Int
 import Data.Typeable
-import Glue.Stats
+import Glue.Ekg
 import Glue.Types
 import Test.QuickCheck.Instances()
 import Test.Hspec
@@ -16,8 +16,8 @@ import System.Metrics
 import qualified System.Metrics.Distribution as MD
 import qualified Data.HashMap.Strict as M
 
-data StatsTestException = StatsTestException deriving (Eq, Show, Typeable)
-instance Exception StatsTestException
+data EkgTestException = EkgTestException deriving (Eq, Show, Typeable)
+instance Exception EkgTestException
 
 data MetricsResult = CounterResult Int64
                    | GaugeResult Int64
@@ -37,12 +37,12 @@ checkResult store name check = do
                 Nothing                       -> fail "No metric."
   check result
 
-testStats :: String -> 
+testStats :: String ->
             (Store -> Text -> BasicService IO Int Int -> IO (BasicService IO Int Int)) ->
             (Int -> Int -> MetricsResult -> Expectation) ->
             (Int -> Int -> MetricsResult -> Expectation) ->
             Spec
-testStats methodName method successCheck failureCheck = 
+testStats methodName method successCheck failureCheck =
   describe methodName $ do
     it "Successful call" $ do
       property $ \(request :: Int, result :: Int, name :: Text) -> do
@@ -53,10 +53,10 @@ testStats methodName method successCheck failureCheck =
         checkResult store name $ successCheck request result
     it "Failing call" $ do
       property $ \(request :: Int, result :: Int, name :: Text) -> do
-        let service _ = throwIO StatsTestException :: IO Int
+        let service _ = throwIO EkgTestException :: IO Int
         store <- newStore
         wrappedService <- method store name service :: IO (BasicService IO Int Int)
-        (wrappedService request) `shouldThrow` (== StatsTestException)
+        (wrappedService request) `shouldThrow` (== EkgTestException)
         checkResult store name $ failureCheck request result
 
 spec :: Spec

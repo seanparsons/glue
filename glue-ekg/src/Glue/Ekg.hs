@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
--- | Module supporting the recording of various stats about a service using "System.Metrics". 
-module Glue.Stats(
+-- | Module supporting the recording of various stats about a service using "System.Metrics".
+module Glue.Ekg(
     recordDistribution
   , recordAttempts
   , recordSuccesses
@@ -40,11 +40,11 @@ recordDistribution store name service = do
                             let recordTime = do
                                                 after <- currentTime
                                                 liftBase $ MD.add dist (after - before)
-                            finally (service req) recordTime 
+                            finally (service req) recordTime
   return timedService
 
 -- | Increments a counter with a 'Counter' held in the passed in 'Store' for each time the service is called.
-recordAttempts :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+recordAttempts :: (MonadBaseControl IO m, MonadBaseControl IO n)
                => Store                   -- ^ 'Store' where the 'Counter' will reside.
                -> Text                    -- ^ The name to associate the 'Counter' with.
                -> BasicService m a b      -- ^ Base service to record stats for.
@@ -57,7 +57,7 @@ recordAttempts store name service = do
   return countedService
 
 -- | Increments a counter with a 'Counter' held in the passed in 'Store' for each time the service successfully returns.
-recordSuccesses :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+recordSuccesses :: (MonadBaseControl IO m, MonadBaseControl IO n)
                 => Store                   -- ^ 'Store' where the 'Counter' will reside.
                 -> Text                    -- ^ The name to associate the 'Counter' with.
                 -> BasicService m a b      -- ^ Base service to record stats for.
@@ -71,7 +71,7 @@ recordSuccesses store name service = do
   return countedService
 
 -- | Increments a counter with a 'Counter' held in the passed in 'Store' for each time the service fails.
-recordFailures :: (MonadBaseControl IO m, MonadBaseControl IO n) 
+recordFailures :: (MonadBaseControl IO m, MonadBaseControl IO n)
                => Store                   -- ^ 'Store' where the 'Counter' will reside.
                -> Text                    -- ^ The name to associate the 'Counter' with.
                -> BasicService m a b      -- ^ Base service to record stats for.
@@ -82,7 +82,7 @@ recordFailures store name service = do
   return countedService
 
 -- | Sets a 'Label' held in the passed in 'Store' for each request the service receives.
-recordLastRequest :: (MonadBaseControl IO m, MonadBaseControl IO n, Show a) 
+recordLastRequest :: (MonadBaseControl IO m, MonadBaseControl IO n, Show a)
                   => Store                   -- ^ 'Store' where the 'Label' will reside.
                   -> Text                    -- ^ The name to associate the 'Label' with.
                   -> BasicService m a b      -- ^ Base service to record stats for.
@@ -95,7 +95,7 @@ recordLastRequest store name service = do
   return requestRecordingService
 
 -- | Sets a 'Label' held in the passed in 'Store' for each successful result the service returns.
-recordLastResult :: (MonadBaseControl IO m, MonadBaseControl IO n, Show b) 
+recordLastResult :: (MonadBaseControl IO m, MonadBaseControl IO n, Show b)
                  => Store                   -- ^ 'Store' where the 'Label' will reside.
                  -> Text                    -- ^ The name to associate the 'Label' with.
                  -> BasicService m a b      -- ^ Base service to record stats for.
@@ -105,5 +105,5 @@ recordLastResult store name service = do
   let resultRecordingService req = do
                                       result <- service req
                                       liftBase $ ML.set label $ pack $ show result
-                                      return result                                      
+                                      return result
   return resultRecordingService

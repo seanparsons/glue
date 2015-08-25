@@ -1,0 +1,78 @@
+name:                   glue-core
+version:                0.3.0
+synopsis:               Make better services.
+description:            Implements common patterns used in building services that run smoothly and efficiently.
+license:                BSD3
+license-file:           ../LICENSE
+author:                 Sean Parsons
+maintainer:             github@futurenotfound.com
+category:               Network
+build-type:             Simple
+cabal-version:          >=1.10
+
+source-repository head
+  type:                 git
+  location:             git://github.com/seanparsons/glue.git
+
+library
+  exposed-modules:      Glue.Failover
+                        Glue.Caching
+                        Glue.CircuitBreaker
+                        Glue.DogpileProtection
+                        Glue.Timeout
+                        Glue.Retry
+                        Glue.Batcher
+                        Glue.Preload
+                        Glue.Switching
+  -- other-extensions:
+  build-depends:        base >=4.6 && <4.9,
+                        glue-common,
+                        transformers,
+                        transformers-base,
+                        lifted-base,
+                        time,
+                        monad-control,
+                        unordered-containers,
+                        hashable,
+                        text
+  ghc-options:          -rtsopts
+                        -Wall
+  hs-source-dirs:       src
+  default-language:     Haskell2010
+
+test-suite glue-core-tests
+  build-depends:        base ==4.*,
+                        glue-common,
+                        QuickCheck -any,
+                        quickcheck-instances,
+                        hspec >=2.1.10,
+                        transformers,
+                        transformers-base,
+                        lifted-base,
+                        time,
+                        monad-control,
+                        unordered-containers,
+                        hashable,
+                        ekg-core,
+                        text,
+                        async
+  other-modules:        Glue.CachingSpec
+                        Glue.FailoverSpec
+                        Glue.RetrySpec
+                        Glue.DogpileProtectionSpec
+                        Glue.Testing
+                        Glue.TimeoutSpec
+                        Glue.CircuitBreakerSpec
+                        Glue.BatcherSpec
+                        Glue.PreloadSpec
+                        Spec
+  ghc-options:          -rtsopts
+                        -Wall
+                        -O2
+                        -threaded
+  type:                 exitcode-stdio-1.0
+  main-is:              Main.hs
+  buildable:            True
+  default-language:     Haskell2010
+  hs-source-dirs:       test,
+                        src

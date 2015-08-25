@@ -5,7 +5,8 @@ module Glue.Example.BatcherExample(
     batcherExample
 ) where
 
-import Glue
+import Glue.Batcher
+import Glue.Ekg
 import Control.Concurrent.Async
 import Control.Concurrent.Lifted
 import Data.IORef.Lifted
