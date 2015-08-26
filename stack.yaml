@@ -1,13 +1,1 @@
-flags: {}
-packages:
-- './glue-common'
-- './glue-core'
-- './glue-ekg'
-- './glue-example'
-extra-deps:
-- ekg-core-0.1.0.4
-- hspec-2.1.10
-- hspec-core-2.1.10
-- hspec-discover-2.1.10
-- hspec-expectations-0.7.1
-resolver: nightly-2015-06-28
+stack-7.8.yaml
