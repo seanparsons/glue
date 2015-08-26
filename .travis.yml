@@ -32,8 +32,8 @@ before_install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
 
 install:
-  - ./travis_long stack +RTS -N1 -RTS --no-terminal --skip-ghc-check setup
-  - ./travis_long stack +RTS -N1 -RTS --no-terminal --skip-ghc-check test --only-snapshot
+  - stack +RTS -N1 -RTS --no-terminal --skip-ghc-check setup
+  - stack +RTS -N1 -RTS --no-terminal --skip-ghc-check test --only-snapshot
 
 script:
   - stack +RTS -N2 -RTS --no-terminal --skip-ghc-check test
