@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 
 -- | Module containing the root types and some support functionality.
 module Glue.Types(
@@ -8,6 +9,8 @@ module Glue.Types(
   , MultiGetRequest
   , MultiGetResponse
   , ResultVar
+  , MToIO
+  , FailOrSuccess
   , multiGetToBasic
   , basicToMultiGet
   , getResult
@@ -34,6 +37,10 @@ type MultiGetResponse a b = M.HashMap a b
 type MultiGetService m a b = BasicService m (MultiGetRequest a) (MultiGetResponse a b)
 -- | Type alias for the common container of a result used in asynchronous calls.
 type ResultVar a = MVar (Either SomeException a)
+-- | Run the m into an IO instance for a response.
+type MToIO m = forall a. m a -> IO a
+-- | Type alias for either a failure or a successful response.
+type FailOrSuccess a b = Either SomeException (MultiGetResponse a b)
 
 -- | Convert a 'MultiGetService' into a 'BasicService' that looks up a single key, returning a `Maybe` which determines if the value was present.
 multiGetToBasic :: (Hashable a, Eq a, Monad m) => MultiGetService m a b -> BasicService m a (Maybe b)
@@ -54,5 +61,5 @@ getResult var = do
   either throwIO return result
 
 -- | Makes a multi-get call and handles the error bundling it up inside an 'Either'.
-makeCall :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> S.HashSet a -> m (Either SomeException (M.HashMap a b))
+makeCall :: (Eq a, Hashable a, MonadBaseControl IO m) => MultiGetService m a b -> S.HashSet a -> m (FailOrSuccess a b)
 makeCall service requests = catch (fmap Right $ service requests) (\(e :: SomeException) -> return $ Left e)
