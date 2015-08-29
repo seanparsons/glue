@@ -1,9 +1,9 @@
 name:                   glue-core
-version:                0.3.0
+version:                0.4.1
 synopsis:               Make better services.
-description:            Implements common patterns used in building services that run smoothly and efficiently.
+description:            Combinator library to enhance the general functionality of services.
 license:                BSD3
-license-file:           ../LICENSE
+license-file:           LICENSE
 author:                 Sean Parsons
 maintainer:             github@futurenotfound.com
 category:               Network
@@ -26,7 +26,7 @@ library
                         Glue.Switching
   -- other-extensions:
   build-depends:        base >=4.6 && <4.9,
-                        glue-common,
+                        glue-common ==0.4.1,
                         transformers,
                         transformers-base,
                         lifted-base,

@@ -1,9 +1,9 @@
 name:                   glue-common
-version:                0.3.0
+version:                0.4.1
 synopsis:               Make better services.
-description:            Implements common patterns used in building services that run smoothly and efficiently.
+description:            Common types and base functions used in the glue family of libraries. 
 license:                BSD3
-license-file:           ../LICENSE
+license-file:           LICENSE
 author:                 Sean Parsons
 maintainer:             github@futurenotfound.com
 category:               Network

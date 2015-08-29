@@ -1,9 +1,9 @@
 name:                   glue-ekg
-version:                0.3.0
+version:                0.4.1
 synopsis:               Make better services.
-description:            Implements common patterns used in building services that run smoothly and efficiently.
+description:            Glue library that makes use of ekg for providing stats around services.
 license:                BSD3
-license-file:           ../LICENSE
+license-file:           LICENSE
 author:                 Sean Parsons
 maintainer:             github@futurenotfound.com
 category:               Network
@@ -18,7 +18,7 @@ library
   exposed-modules:      Glue.Ekg
   -- other-extensions:
   build-depends:        base >=4.6 && <4.9,
-                        glue-common,
+                        glue-common ==0.4.1,
                         transformers,
                         transformers-base,
                         lifted-base,

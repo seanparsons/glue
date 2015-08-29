@@ -1,9 +1,9 @@
 name:                   glue-example
-version:                0.3.0
+version:                0.4.1
 synopsis:               Make better services.
-description:            Implements common patterns used in building services that run smoothly and efficiently.
+description:            Examples of the use of glue library functionality.
 license:                BSD3
-license-file:           ../LICENSE
+license-file:           LICENSE
 author:                 Sean Parsons
 maintainer:             github@futurenotfound.com
 category:               Network
@@ -19,9 +19,9 @@ executable glue-example
   hs-source-dirs:       src
   other-modules:        Glue.Example.BatcherExample
   build-depends:        base ==4.*,
-                        glue-common,
-                        glue-core,
-                        glue-ekg,
+                        glue-common ==0.4.1,
+                        glue-core ==0.4.1,
+                        glue-ekg ==0.4.1,
                         transformers,
                         transformers-base,
                         lifted-base,
