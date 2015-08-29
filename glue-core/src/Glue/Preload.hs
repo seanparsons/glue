@@ -11,6 +11,9 @@ module Glue.Preload(
     PreloadedOptions
   , defaultPreloadedOptions
   , preloadingService
+  , preloadedKeys
+  , preloadingRefreshTimeMs
+  , preloadingRun
 ) where
 
 import Glue.Types
