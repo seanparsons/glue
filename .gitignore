@@ -2,4 +2,4 @@
 cabal.sandbox.config
 dist
 *.sublime-*
-.stack-work
+**/.stack-work
