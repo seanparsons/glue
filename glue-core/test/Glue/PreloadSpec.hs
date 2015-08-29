@@ -30,14 +30,14 @@ spec = do
     it "Requests should work the same regardless of whether or not parts are preloaded" $ do
       property $ \(preload :: S.HashSet Int, nonPreload :: S.HashSet Int) -> do
         let service = (return . serviceFunctionality) :: MultiGetService IO Int Int
-        (preloadedService, disable) <- preloadingService (defaultPreloadedOptions preload) service
+        (preloadedService, disable) <- preloadingService (defaultPreloadedOptions preload id) service
         let expectedResults = serviceFunctionality (S.union preload nonPreload)
         actualResults <- preloadedService (S.union preload nonPreload)
         disable ()
         actualResults `shouldBe` expectedResults
     it "Exceptions should propagate" $ do
       property $ \(preload :: S.HashSet Int, nonPreload :: S.HashSet Int) -> do
-        (preloadedService, _) <- preloadingService (defaultPreloadedOptions preload) failingService
+        (preloadedService, _) <- preloadingService (defaultPreloadedOptions preload id) failingService
         let expectedResults = serviceFunctionality (S.union preload nonPreload)
         let goodPath = preloadedService (S.union preload nonPreload) `shouldReturn` expectedResults
         let badPath = preloadedService (S.union preload nonPreload) `shouldThrow` (== PreloadTestException)

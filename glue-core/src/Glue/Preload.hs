@@ -53,7 +53,7 @@ modifyStateWithResult result (PreloadedWithResult _ c)  = (PreloadedWithResult r
 applyResultToState :: forall m a b . MonadBaseControl IO m => IORef (PreloadedState a b) -> FailOrSuccess a b -> m Bool
 applyResultToState stateRef result = atomicModifyIORef' stateRef $ modifyStateWithResult result
 
-waitForResult :: forall m a b . MonadBaseControl IO m => IORef (PreloadedState a b) -> m (MultiGetResponse a b)
+waitForResult :: forall m a b . (MonadBaseControl IO m) => IORef (PreloadedState a b) -> m (MultiGetResponse a b)
 waitForResult stateRef = do
                             state <- readIORef stateRef
                             let tryAgainLater = threadDelay 1000 >> waitForResult stateRef
@@ -77,10 +77,9 @@ preloadingService PreloadedOptions{..} service = do
   let runUpdate = do
                     result <- makeCall service preloadedKeys
                     applyResultToState stateIORef result
-  let updatePreloaded = do
-                          threadDelay (preloadingRefreshTimeMs * 1000)
+  let updatePreloaded = do                          
                           continue <- liftIO $ preloadingRun $ runUpdate
-                          if continue then updatePreloaded else return ()
+                          if continue then threadDelay (preloadingRefreshTimeMs * 1000) >> updatePreloaded else return ()
   let plService request = do
                             let fromPreloadKeys = S.intersection request preloadedKeys
                             let fromServiceKeys = S.difference request preloadedKeys
