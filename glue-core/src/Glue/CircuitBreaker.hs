@@ -6,8 +6,11 @@
 -- | Often this is useful if the underlying service were to repeatedly time out, so as to reduce the number of calls inflight holding up upstream callers.
 module Glue.CircuitBreaker(
     CircuitBreakerOptions
-  , CircuitBreakerStatus
+  , CircuitBreakerState
   , CircuitBreakerException(..)
+  , combineCircuitBreakerStates
+  , isCircuitBreakerOpen
+  , isCircuitBreakerClosed
   , defaultCircuitBreakerOptions
   , circuitBreaker
   , maxBreakerFailures
@@ -15,6 +18,9 @@ module Glue.CircuitBreaker(
   , breakerDescription
 ) where
 
+import Data.Foldable hiding (or, and)
+import Data.Traversable
+import Data.Monoid
 import Control.Exception.Lifted
 import Control.Monad.Base
 import Control.Monad.Trans.Control
@@ -35,46 +41,92 @@ defaultCircuitBreakerOptions :: CircuitBreakerOptions
 defaultCircuitBreakerOptions = CircuitBreakerOptions { maxBreakerFailures = 3, resetTimeoutSecs = 60, breakerDescription = "Circuit breaker open." }
 
 -- | Status indicating if the circuit is open.
-data CircuitBreakerStatus = CircuitBreakerClosed Int | CircuitBreakerOpen Int
+data BreakerStatus = BreakerClosed Int | BreakerOpen Int deriving (Eq, Show)
+
+-- | Representation of the state the circuit breaker is currently in.
+data CircuitBreakerState = CircuitBreakerState [IORef BreakerStatus]
 
 -- | Exception thrown when the circuit is open.
 data CircuitBreakerException = CircuitBreakerException String deriving (Eq, Show, Typeable)
 instance Exception CircuitBreakerException
+
+-- | Combines multiple states together.
+combineCircuitBreakerStates :: (Foldable t) => t CircuitBreakerState -> CircuitBreakerState
+combineCircuitBreakerStates states = CircuitBreakerState $ foldMap (\(CircuitBreakerState refs) -> refs) states
+
+-- | Determines if a specific status is open.
+isStatusOpen :: BreakerStatus -> Bool
+isStatusOpen (BreakerOpen _)    = True
+isStatusOpen (BreakerClosed _)  = False
+
+-- | Determines if a specific status is closed.
+isStatusClosed :: BreakerStatus -> Bool
+isStatusClosed (BreakerOpen _)    = False
+isStatusClosed (BreakerClosed _)  = True
+
+-- | Determines if a circuit breaker is open.
+isCircuitBreakerOpen :: (MonadBaseControl IO m) => CircuitBreakerState -> m Bool
+isCircuitBreakerOpen (CircuitBreakerState states) = fmap or $ traverse (\ref -> fmap isStatusOpen $ readIORef ref) states
+
+-- | Determines if a circuit breaker is closed.
+isCircuitBreakerClosed :: (MonadBaseControl IO m) => CircuitBreakerState -> m Bool
+isCircuitBreakerClosed (CircuitBreakerState states) = fmap and $ traverse (\ref -> fmap isStatusClosed $ readIORef ref) states
 
 -- TODO: Check that values within m aren't lost on a successful call.
 -- | Circuit breaking services can be constructed with this function.
 circuitBreaker :: (MonadBaseControl IO m, MonadBaseControl IO n) 
                => CircuitBreakerOptions       -- ^ Options for specifying the circuit breaker behaviour.
                -> BasicService m a b          -- ^ Service to protect with the circuit breaker.
-               -> n (IORef CircuitBreakerStatus, BasicService m a b)
+               -> n (CircuitBreakerState, BasicService m a b)
 circuitBreaker options service = 
   let getCurrentTime              = liftBase $ round `fmap` getPOSIXTime
       failureMax                  = maxBreakerFailures options
       callIfClosed request ref    = bracketOnError (return ()) (\_ -> incErrors ref) (\_ -> service request)
       canaryCall request ref      = do
                                       result <- callIfClosed request ref
-                                      writeIORef ref $ CircuitBreakerClosed 0
+                                      writeIORef ref $ BreakerClosed 0
                                       return result
       incErrors ref               = do
                                       currentTime <- getCurrentTime
                                       atomicModifyIORef' ref $ \status -> case status of
-                                        (CircuitBreakerClosed errorCount) -> (if errorCount >= failureMax then CircuitBreakerOpen (currentTime + (resetTimeoutSecs options)) else CircuitBreakerClosed (errorCount + 1), ())
+                                        (BreakerClosed errorCount) -> (if errorCount >= failureMax then BreakerOpen (currentTime + (resetTimeoutSecs options)) else BreakerClosed (errorCount + 1), ())
                                         other                             -> (other, ())
                                       
       failingCall                 = throw $ CircuitBreakerException $ breakerDescription options
       callIfOpen request ref      = do
                                       currentTime <- getCurrentTime
                                       canaryRequest <- atomicModifyIORef' ref $ \status -> case status of 
-                                                              (CircuitBreakerClosed _)  -> (status, False)
-                                                              (CircuitBreakerOpen time) -> if currentTime > time then ((CircuitBreakerOpen (currentTime + (resetTimeoutSecs options))), True) else (status, False)
+                                                              (BreakerClosed _)  -> (status, False)
+                                                              (BreakerOpen time) -> if currentTime > time then ((BreakerOpen (currentTime + (resetTimeoutSecs options))), True) else (status, False)
                                       
                                       if canaryRequest then canaryCall request ref else failingCall
       breakerService ref request  = do
                                       status <- readIORef ref
                                       case status of 
-                                        (CircuitBreakerClosed _)  -> callIfClosed request ref
-                                        (CircuitBreakerOpen _)    -> callIfOpen request ref
+                                        (BreakerClosed _)  -> callIfClosed request ref
+                                        (BreakerOpen _)    -> callIfOpen request ref
                                       
   in do
-        ref <- newIORef $ CircuitBreakerClosed 0
-        return (ref, breakerService ref)
+        ref <- newIORef $ BreakerClosed 0
+        return (CircuitBreakerState [ref], breakerService ref)
+
+
+-- | Options that determine for an early circuit breaker the behaviour.
+data EarlyCircuitBreakerOptions = EarlyCircuitBreakerOptions {
+    earlyBreakerState         :: CircuitBreakerState  -- ^ The state that is consulted before making any call.      
+  , earlyBreakerDescription   :: String               -- ^ Description that is attached to the failure so as to identify the particular circuit.
+}
+
+
+-- | Circuit that breaks a service based on a state obtained previously.
+earlyCircuitBreaker :: (MonadBaseControl IO m) 
+                    => BasicService m a b           -- ^ Service to protect with the circuit breaker.
+                    -> EarlyCircuitBreakerOptions   -- ^ Options to specifying the circuit breaker behaviour.
+                    -> BasicService m a b
+earlyCircuitBreaker service options = 
+  let callIfOpen              = throw $ CircuitBreakerException $ earlyBreakerDescription options
+      callIfClosed request    = service request
+      breakerService request  = do
+                                  isClosed <- isCircuitBreakerClosed $ earlyBreakerState options
+                                  if isClosed then callIfClosed request else callIfOpen
+  in  breakerService
