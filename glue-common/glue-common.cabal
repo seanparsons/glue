@@ -1,6 +1,6 @@
 name:                   glue-common
-version:                0.4.1
-synopsis:               Make better services.
+version:                0.4.2
+synopsis:               Make better services and clients.
 description:            Common types and base functions used in the glue family of libraries. 
 license:                BSD3
 license-file:           LICENSE

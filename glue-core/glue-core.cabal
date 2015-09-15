@@ -1,7 +1,7 @@
 name:                   glue-core
-version:                0.4.1
-synopsis:               Make better services.
-description:            Combinator library to enhance the general functionality of services.
+version:                0.4.2
+synopsis:               Make better services and clients.
+description:            Combinator library to enhance the general functionality of services and clients.
 license:                BSD3
 license-file:           LICENSE
 author:                 Sean Parsons

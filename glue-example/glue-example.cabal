@@ -1,6 +1,6 @@
 name:                   glue-example
-version:                0.4.1
-synopsis:               Make better services.
+version:                0.4.2
+synopsis:               Make better services and clients.
 description:            Examples of the use of glue library functionality.
 license:                BSD3
 license-file:           LICENSE

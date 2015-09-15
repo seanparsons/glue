@@ -109,24 +109,3 @@ circuitBreaker options service =
   in do
         ref <- newIORef $ BreakerClosed 0
         return (CircuitBreakerState [ref], breakerService ref)
-
-
--- | Options that determine for an early circuit breaker the behaviour.
-data EarlyCircuitBreakerOptions = EarlyCircuitBreakerOptions {
-    earlyBreakerState         :: CircuitBreakerState  -- ^ The state that is consulted before making any call.      
-  , earlyBreakerDescription   :: String               -- ^ Description that is attached to the failure so as to identify the particular circuit.
-}
-
-
--- | Circuit that breaks a service based on a state obtained previously.
-earlyCircuitBreaker :: (MonadBaseControl IO m) 
-                    => BasicService m a b           -- ^ Service to protect with the circuit breaker.
-                    -> EarlyCircuitBreakerOptions   -- ^ Options to specifying the circuit breaker behaviour.
-                    -> BasicService m a b
-earlyCircuitBreaker service options = 
-  let callIfOpen              = throw $ CircuitBreakerException $ earlyBreakerDescription options
-      callIfClosed request    = service request
-      breakerService request  = do
-                                  isClosed <- isCircuitBreakerClosed $ earlyBreakerState options
-                                  if isClosed then callIfClosed request else callIfOpen
-  in  breakerService

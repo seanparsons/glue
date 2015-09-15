@@ -1,7 +1,7 @@
 name:                   glue-ekg
-version:                0.4.1
-synopsis:               Make better services.
-description:            Glue library that makes use of ekg for providing stats around services.
+version:                0.4.2
+synopsis:               Make better services and clients.
+description:            Glue library that makes use of ekg for providing stats around services and clients.
 license:                BSD3
 license-file:           LICENSE
 author:                 Sean Parsons
