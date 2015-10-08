@@ -1,5 +1,5 @@
-Building Better Services
-========================
+Building Better Services And Clients
+====================================
 
 [![Build Status](https://secure.travis-ci.org/seanparsons/glue.svg)](http://travis-ci.org/seanparsons/glue)
 
