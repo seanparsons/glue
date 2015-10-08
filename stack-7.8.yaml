@@ -10,4 +10,4 @@ extra-deps:
 - hspec-core-2.1.10
 - hspec-discover-2.1.10
 - hspec-expectations-0.7.1
-resolver: lts-2.22
+resolver: lts-3.8

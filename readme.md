@@ -13,7 +13,8 @@ Batching
 
 In a social network there may be another service that returns user records, if this social network is really busy it would likely be more efficient to capture multiple calls and dispatch them as one multi-get call.
 
-The batchingService function creates both single and multi-get calls (hence the "fmap snd" below), which accumulate requests over a user defined window in time and dispatch them once that window has passed.
+The batchingService function creates both single and multi-get calls (hence the "fmap snd" below), which accumulate requests over a user defined window in time and dispatch them once that window has passed. The service functions created can be used across threads, thereby limiting the
+amount of parallel calls to an upstream system.
 
 ```haskell
 data User = User Int String

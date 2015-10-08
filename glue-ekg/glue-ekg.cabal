@@ -36,6 +36,7 @@ library
 test-suite glue-ekg-tests
   build-depends:        base ==4.*,
                         glue-common,
+                        glue-ekg,
                         QuickCheck -any,
                         quickcheck-instances,
                         hspec >=2.1.10,
@@ -59,5 +60,4 @@ test-suite glue-ekg-tests
   main-is:              Main.hs
   buildable:            True
   default-language:     Haskell2010
-  hs-source-dirs:       test,
-                        src
+  hs-source-dirs:       test
