@@ -2,21 +2,22 @@
 
 module Glue.RetrySpec where
 
+import Control.Concurrent
 import Data.IORef
 import Data.Typeable
 import Glue.Retry
 import Test.Hspec
 import Test.QuickCheck
-import Control.Exception.Base hiding (throw, throwIO)
-import Control.Exception.Lifted
+import Control.Exception.Base hiding (throw, throwIO, throwTo)
+import Control.Exception.Lifted hiding (throwTo)
 import Control.Monad.IO.Class
 
 newtype SmallInt = SmallInt Int deriving (Eq, Show)
 
 instance Arbitrary SmallInt where
   arbitrary = sized $ \s -> do
-                                 n <- choose (0, s `min` 10)
-                                 return $ SmallInt n
+                              n <- choose (0, s `min` 10)
+                              return $ SmallInt n
 
 data RetryTestException = RetryTestException deriving (Eq, Show, Typeable)
 instance Exception RetryTestException
@@ -36,3 +37,17 @@ spec = do
           let successCase   = (retryService request) `shouldReturn` (request :: Int)
           let failureCase   = (retryService request) `shouldThrow` (== RetryTestException)
           if retries >= failures then successCase else failureCase
+    it "Asynchronous exceptions are rethrown" $ do
+      property $ \(request, retries) -> 
+        do
+          ref <- liftIO $ newIORef 0
+          let service req   = do
+                                atomicModifyIORef' ref (\c -> (c + 1, ()))
+                                threadId <- myThreadId
+                                forkIO (threadDelay 10000 >> throwTo threadId UserInterrupt)
+                                threadDelay 1000000
+                                return (req * 2 :: Int)
+          let options       = defaultRetryOptions { maximumRetries = retries }
+          let retryService  = retryingService options service
+          (retryService request) `shouldThrow` (== UserInterrupt)
+          (readIORef ref) `shouldReturn` 1

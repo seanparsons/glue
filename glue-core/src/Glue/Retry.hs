@@ -35,15 +35,22 @@ defaultRetryOptions = RetryOptions {
   , retryWaitTimeMultiplier = 0
   }
 
+possibleAsyncException :: SomeException -> Maybe SomeAsyncException
+possibleAsyncException = fromException
+
 -- | Retries a call to a service multiple times, potentially backing off wait times between subsequent calls.
+-- | Asynchronous exceptions don't result in a retry, they are immediately rethrown.
 retryingService :: (MonadBaseControl IO m)
                 => RetryOptions a             -- ^ Instance of 'RetryOptions' to configure the retry functionality.
                 -> BasicService m a b         -- ^ The service to perform retries of.
                 -> BasicService m a b
 retryingService options service =
-  let attempt retryCount request  = if (retryAllowed options) request && maxRetries > retryCount
-                                      then catch (service request) (\(_ :: SomeException) -> (wait (retryCount + 1)) >> (attempt (retryCount + 1) request))
-                                      else service request
+  let catchHandler rc r e         = case possibleAsyncException e of
+                                                                    Just ae -> throw ae
+                                                                    Nothing -> wait (rc + 1) >> attempt (rc + 1) r
+      attempt retryCount request  = if (retryAllowed options) request && maxRetries > retryCount
+                                    then catch (service request) (catchHandler retryCount request)
+                                    else service request
       maxRetries                  = maximumRetries options
       wait retryCount             = threadDelay $ round $ fromIntegral (retryInitialWaitTimeMs options) * ((retryWaitTimeMultiplier options) ^ retryCount)
   in  attempt 0
