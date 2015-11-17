@@ -5,9 +5,9 @@ packages:
 - './glue-ekg'
 - './glue-example'
 extra-deps:
-- ekg-core-0.1.0.4
-- hspec-2.1.10
-- hspec-core-2.1.10
-- hspec-discover-2.1.10
-- hspec-expectations-0.7.1
-resolver: lts-3.2
+- ekg-core-0.1.1.0
+- hspec-2.2.0
+- hspec-core-2.2.0
+- hspec-discover-2.2.0
+- hspec-expectations-0.7.2
+resolver: lts-3.14
