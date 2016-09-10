@@ -11,11 +11,13 @@ module Glue.Preload(
     PreloadedOptions
   , defaultPreloadedOptions
   , preloadingService
+  , preloadingCall
   , preloadedKeys
   , preloadingRefreshTimeMs
   , preloadingRun
 ) where
 
+import Data.Maybe
 import Glue.Types
 import Data.Hashable
 import Data.Typeable
@@ -80,7 +82,7 @@ preloadingService PreloadedOptions{..} service = do
   let runUpdate = do
                     result <- makeCall service preloadedKeys
                     applyResultToState stateIORef result
-  let updatePreloaded = do                          
+  let updatePreloaded = do
                           continue <- liftIO $ preloadingRun $ runUpdate
                           if continue then threadDelay (preloadingRefreshTimeMs * 1000) >> updatePreloaded else return ()
   let plService request = do
@@ -91,3 +93,17 @@ preloadingService PreloadedOptions{..} service = do
                             return $ M.union fromService fromPreload
   fork updatePreloaded
   return (plService, stop)
+
+-- | Preloads a single parameter-less call.
+preloadingCall :: forall m n b . (MonadIO m, MonadIO n, MonadBaseControl IO m, MonadBaseControl IO n)
+               => MToIO m                     -- ^ Get an IO of the call for the caching.
+               -> Int                         -- ^ Amount of time between refreshes.
+               -> m b                         -- ^ The call to perform preloading of.
+               -> n (m b, () -> n ())
+preloadingCall toIO timeBetweenRefreshes call = do
+  let multiGetService = basicToMultiGet (\_ -> call) :: MultiGetService m () b
+  let options = PreloadedOptions (S.singleton ()) timeBetweenRefreshes toIO
+  (preloading, stop) <- preloadingService options multiGetService
+  let preloadingBasicService = multiGetToBasic preloading
+  let preloadingCallResult = fmap (fromJust) $ preloadingBasicService ()
+  return (preloadingCallResult, stop)

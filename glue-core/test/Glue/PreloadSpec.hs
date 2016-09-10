@@ -18,11 +18,14 @@ serviceFunctionality rs = M.fromList $ fmap (\r -> (r, r * 2)) $ S.toList rs
 failingService :: MultiGetRequest Int -> IO (MultiGetResponse Int Int)
 failingService _ = throwIO PreloadTestException
 
+successfullCall :: IO Int
+successfullCall = return 12
+
+failingCall :: IO Int
+failingCall = throwIO PreloadTestException
+
 data PreloadTestException = PreloadTestException deriving (Eq, Show, Typeable)
 instance Exception PreloadTestException
-
-handler :: SomeException -> IO (M.HashMap Int Int)
-handler e = print e >> return M.empty
 
 spec :: Spec
 spec = do
@@ -42,3 +45,14 @@ spec = do
         let goodPath = preloadedService (S.union preload nonPreload) `shouldReturn` expectedResults
         let badPath = preloadedService (S.union preload nonPreload) `shouldThrow` (== PreloadTestException)
         if (S.null preload && S.null nonPreload) then goodPath else badPath
+  describe "preloadingCall" $ do
+    it "Requests should work" $ do
+      property $ do
+        (preloadedCall, disable) <- preloadingCall id 1000 successfullCall
+        actualResults <- preloadedCall
+        disable ()
+        actualResults `shouldBe` 12
+    it "Exceptions should propagate" $ do
+      property $ do
+        (preloadedCall, disable) <- preloadingCall id 1000 failingCall
+        preloadedCall `shouldThrow` (== PreloadTestException)
