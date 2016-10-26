@@ -5,7 +5,7 @@ packages:
 - './glue-ekg'
 - './glue-example'
 extra-deps:
-- ekg-core-0.1.1.0
+- ekg-core-0.1.1.1
 - hspec-2.2.3
 - hspec-core-2.2.3
 - hspec-discover-2.2.3
