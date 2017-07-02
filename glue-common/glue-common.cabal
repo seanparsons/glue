@@ -1,5 +1,5 @@
 name:                   glue-common
-version:                0.4.9
+version:                0.5
 synopsis:               Make better services and clients.
 description:            Common types and base functions used in the glue family of libraries.
 license:                BSD3
@@ -35,7 +35,7 @@ test-suite glue-common-tests
                         glue-common,
                         QuickCheck -any,
                         quickcheck-instances,
-                        hspec >=2.1.10,
+                        hspec,
                         transformers,
                         transformers-base,
                         lifted-base,

@@ -1,5 +1,5 @@
 name:                   glue-core
-version:                0.4.9
+version:                0.5
 synopsis:               Make better services and clients.
 description:            Combinator library to enhance the general functionality of services and clients.
 license:                BSD3
@@ -26,7 +26,7 @@ library
                         Glue.Switching
   -- other-extensions:
   build-depends:        base >=4.6 && <4.10,
-                        glue-common == 0.4.9,
+                        glue-common == 0.5,
                         transformers,
                         transformers-base,
                         lifted-base,
@@ -41,11 +41,11 @@ library
 
 test-suite glue-core-tests
   build-depends:        base >=4.6 && <4.10,
-                        glue-common,
+                        glue-common ,
                         glue-core,
                         QuickCheck -any,
                         quickcheck-instances,
-                        hspec >=2.1.10,
+                        hspec,
                         transformers,
                         transformers-base,
                         lifted-base,

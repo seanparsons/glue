@@ -1,5 +1,5 @@
 name:                   glue-ekg
-version:                0.4.9
+version:                0.5
 synopsis:               Make better services and clients.
 description:            Glue library that makes use of ekg for providing stats around services and clients.
 license:                BSD3
@@ -18,7 +18,7 @@ library
   exposed-modules:      Glue.Ekg
   -- other-extensions:
   build-depends:        base >=4.6 && <4.10,
-                        glue-common == 0.4.9,
+                        glue-common == 0.5,
                         transformers,
                         transformers-base,
                         lifted-base,
@@ -38,7 +38,7 @@ test-suite glue-ekg-tests
                         glue-ekg,
                         QuickCheck -any,
                         quickcheck-instances,
-                        hspec >=2.1.10,
+                        hspec,
                         transformers,
                         transformers-base,
                         lifted-base,

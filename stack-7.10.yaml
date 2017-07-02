@@ -11,3 +11,5 @@ extra-deps:
 - hspec-discover-2.2.3
 - hspec-expectations-0.7.2
 resolver: lts-6.16
+nix:
+    packages: [gcc]
