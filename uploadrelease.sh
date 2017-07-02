@@ -1,5 +1,5 @@
 #!/bin/sh
-stack upload glue-common
-stack upload glue-core
-stack upload glue-ekg
-stack upload glue-example
+stack upload --no-signature glue-common
+stack upload --no-signature glue-core
+stack upload --no-signature glue-ekg
+stack upload --no-signature glue-example
