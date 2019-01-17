@@ -1,5 +1,5 @@
 name:                   glue-ekg
-version:                0.5
+version:                0.6
 synopsis:               Make better services and clients.
 description:            Glue library that makes use of ekg for providing stats around services and clients.
 license:                BSD3
@@ -17,8 +17,8 @@ source-repository head
 library
   exposed-modules:      Glue.Ekg
   -- other-extensions:
-  build-depends:        base >=4.6 && <4.10,
-                        glue-common == 0.5,
+  build-depends:        base >=4.6 && <4.12,
+                        glue-common ==0.6,
                         transformers,
                         transformers-base,
                         lifted-base,
@@ -33,8 +33,8 @@ library
   default-language:     Haskell2010
 
 test-suite glue-ekg-tests
-  build-depends:        base >=4.6 && <4.10,
-                        glue-common,
+  build-depends:        base >=4.6 && <4.12,
+                        glue-common ==0.6,
                         glue-ekg,
                         QuickCheck -any,
                         quickcheck-instances,
@@ -55,6 +55,7 @@ test-suite glue-ekg-tests
                         -Wall
                         -O2
                         -threaded
+  build-tools:          hspec-discover
   type:                 exitcode-stdio-1.0
   main-is:              Main.hs
   buildable:            True

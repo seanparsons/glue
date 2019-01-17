@@ -3,3 +3,5 @@ cabal.sandbox.config
 dist
 *.sublime-*
 **/.stack-work
+dist-newstyle
+.ghc.*
