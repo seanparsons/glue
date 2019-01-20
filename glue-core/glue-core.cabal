@@ -1,5 +1,5 @@
 name:                   glue-core
-version:                0.6
+version:                0.6.1
 synopsis:               Make better services and clients.
 description:            Combinator library to enhance the general functionality of services and clients.
 license:                BSD3

@@ -6,7 +6,7 @@ module Glue.DogpileProtection(
   dogpileProtect
 ) where
 
-import Control.Concurrent.MVar
+import Control.Concurrent
 import Control.Exception
 import Data.Hashable
 import qualified Data.HashMap.Strict as M
@@ -34,24 +34,24 @@ getProtectedResult :: (Eq a, Hashable a)
 getProtectedResult request service mvar mapRef resultMap =
   let mvarWait = waitForMVar mvar
       invokeService = do
-        putStrLn "Invoking"
         result <- try $ service request
-        putStrLn "Got Result"
         putMVar mvar result
         atomicModifyIORef' mapRef (\mapToUpdate -> (M.insert request (CachedValue result) mapToUpdate, ()))
+        forkIO $ do
+          threadDelay (5 * 1000 * 1000)
+          atomicModifyIORef' mapRef (\mapToUpdate -> (M.delete request mapToUpdate, ()))
       inCache = M.lookup request resultMap
   in  maybe (M.insert request (RequestInProgress mvarWait) resultMap, invokeService >> mvarWait) (\r -> (resultMap, getDogpileResult r)) inCache
 
--- TODO: Should make this return just BasicService, hiding the HashMap.
 -- | Dogpile protection of a service, to prevent multiple calls for the same value being submitted.
 -- | Loses the values held within m.
 dogpileProtect :: (Eq a, Hashable a)
                => BasicService IO a b   -- ^ The service to protect.
-               -> IO (IORef (M.HashMap a (DogpileResult b)), BasicService IO a b)
+               -> IO (BasicService IO a b)
 dogpileProtect service = do
   mapRef <- newIORef M.empty
-  mvar <- newEmptyMVar
   let protectedService request = do
+        mvar <- newEmptyMVar
         resultAction <- atomicModifyIORef' mapRef $ getProtectedResult request service mvar mapRef
         resultAction
-  return (mapRef, protectedService)
+  return protectedService
