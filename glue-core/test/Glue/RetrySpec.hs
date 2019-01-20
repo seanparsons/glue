@@ -26,7 +26,7 @@ spec :: Spec
 spec = do
   describe "retryingService" $ do
     it "Attempts a service call multiple times" $ do
-      property $ \(request, (SmallInt failures), (SmallInt retries)) -> 
+      property $ \(request, (SmallInt failures), (SmallInt retries)) ->
         do
           ref <- liftIO $ newIORef 0
           let service req   = do
@@ -40,11 +40,11 @@ spec = do
     it "Asynchronous exceptions are rethrown" $ do
       property $ \(request, retries) -> 
         do
-          ref <- liftIO $ newIORef 0
+          ref <- liftIO $ newIORef (0 :: Int)
           let service req   = do
                                 atomicModifyIORef' ref (\c -> (c + 1, ()))
                                 threadId <- myThreadId
-                                forkIO (threadDelay 10000 >> throwTo threadId UserInterrupt)
+                                _ <- forkIO (threadDelay 10000 >> throwTo threadId UserInterrupt)
                                 threadDelay 1000000
                                 return (req * 2 :: Int)
           let options       = defaultRetryOptions { maximumRetries = retries }
