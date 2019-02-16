@@ -1,16 +1,18 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.PreloadSpec where
 
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
-import Glue.Preload
-import Glue.Types
-import Test.Hspec
-import Test.QuickCheck
-import Test.QuickCheck.Instances()
-import Control.Exception.Base
-import Data.Typeable
+import           Control.Exception.Base
+import qualified Data.HashMap.Strict       as M
+import qualified Data.HashSet              as S
+import           Data.Typeable
+import           Glue.Preload
+import           Glue.Types
+import           Test.Hspec
+import           Test.QuickCheck
+import           Test.QuickCheck.Instances ()
 
 serviceFunctionality :: MultiGetRequest Int -> MultiGetResponse Int Int
 serviceFunctionality rs = M.fromList $ fmap (\r -> (r, r * 2)) $ S.toList rs
@@ -54,5 +56,5 @@ spec = do
         actualResults `shouldBe` 12
     it "Exceptions should propagate" $ do
       property $ do
-        (preloadedCall, disable) <- preloadingCall id 1000 failingCall
+        (preloadedCall, _) <- preloadingCall id 1000 failingCall
         preloadedCall `shouldThrow` (== PreloadTestException)

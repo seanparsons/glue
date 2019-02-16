@@ -1,23 +1,23 @@
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Glue.Example.BatcherExample(
     batcherExample
 ) where
 
-import Glue.Batcher
-import Glue.Ekg
-import Control.Concurrent.Async
-import Control.Concurrent.Lifted
-import Data.IORef.Lifted
-import qualified Data.List as L
-import Data.Text
-import Data.Traversable
-import System.Metrics
+import           Control.Concurrent.Async
+import           Control.Concurrent.Lifted
+import qualified Data.HashMap.Strict         as M
+import qualified Data.HashSet                as S
+import           Data.IORef.Lifted
+import qualified Data.List                   as L
+import           Data.Text
+import           Data.Traversable
+import           Glue.Batcher
+import           Glue.Ekg
+import           System.Metrics
 import qualified System.Metrics.Distribution as D
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
-import Text.Printf
+import           Text.Printf
 
 printStats :: Store -> Text -> IO ()
 printStats store name = do

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module supporting the dogpile protection of a service, see <http://en.wikipedia.org/wiki/Cache_stampede http://en.wikipedia.org/wiki/Cache_stampede>.
@@ -6,12 +6,12 @@ module Glue.DogpileProtection(
   dogpileProtect
 ) where
 
-import Control.Concurrent
-import Control.Exception
-import Data.Hashable
+import           Control.Concurrent
+import           Control.Exception
+import           Data.Hashable
 import qualified Data.HashMap.Strict as M
-import Data.IORef
-import Glue.Types
+import           Data.IORef
+import           Glue.Types
 
 data DogpileResult b = CachedValue (Either SomeException b)
                      | RequestInProgress (IO b)
@@ -22,7 +22,7 @@ type ResultRef a b = IORef (ResultMap a b)
 
 getDogpileResult :: DogpileResult b -> IO b
 getDogpileResult (RequestInProgress requestWait) = requestWait
-getDogpileResult (CachedValue result) = either throw return result
+getDogpileResult (CachedValue result)            = either throw return result
 
 waitForMVar :: MVar (Either SomeException b) -> IO b
 waitForMVar mvar = do

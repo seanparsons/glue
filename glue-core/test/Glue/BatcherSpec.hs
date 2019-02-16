@@ -1,14 +1,16 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.BatcherSpec where
 
-import Control.Concurrent.Async
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
-import Glue.Batcher
-import Glue.Types
-import Test.Hspec
-import Test.QuickCheck
+import           Control.Concurrent.Async
+import qualified Data.HashMap.Strict      as M
+import qualified Data.HashSet             as S
+import           Glue.Batcher
+import           Glue.Types
+import           Test.Hspec
+import           Test.QuickCheck
 
 spec :: Spec
 spec = do

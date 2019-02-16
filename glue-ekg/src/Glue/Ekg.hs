@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module supporting the recording of various stats about a service using "System.Metrics".
@@ -11,16 +11,16 @@ module Glue.Ekg(
   , recordLastResult
 ) where
 
-import Control.Exception.Lifted
-import Control.Monad.Base
-import Data.Text
-import Data.Time.Clock.POSIX
-import Glue.Types
-import Control.Monad.Trans.Control
-import System.Metrics
+import           Control.Exception.Lifted
+import           Control.Monad.Base
+import           Control.Monad.Trans.Control
+import           Data.Text
+import           Data.Time.Clock.POSIX
+import           Glue.Types
+import           System.Metrics
+import qualified System.Metrics.Counter      as MC
 import qualified System.Metrics.Distribution as MD
-import qualified System.Metrics.Counter as MC
-import qualified System.Metrics.Label as ML
+import qualified System.Metrics.Label        as ML
 
 currentTime :: (MonadBaseControl IO m) => m Double
 currentTime = do

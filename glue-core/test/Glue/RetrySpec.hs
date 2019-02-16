@@ -1,16 +1,17 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE OverloadedStrings  #-}
 
 module Glue.RetrySpec where
 
-import Control.Concurrent
-import Data.IORef
-import Data.Typeable
-import Glue.Retry
-import Test.Hspec
-import Test.QuickCheck
-import Control.Exception.Base hiding (throw, throwIO, throwTo)
-import Control.Exception.Lifted hiding (throwTo)
-import Control.Monad.IO.Class
+import           Control.Concurrent
+import           Control.Exception.Base   hiding (throw, throwIO, throwTo)
+import           Control.Exception.Lifted hiding (throwTo)
+import           Control.Monad.IO.Class
+import           Data.IORef
+import           Data.Typeable
+import           Glue.Retry
+import           Test.Hspec
+import           Test.QuickCheck
 
 newtype SmallInt = SmallInt Int deriving (Eq, Show)
 
@@ -38,7 +39,7 @@ spec = do
           let failureCase   = (retryService request) `shouldThrow` (== RetryTestException)
           if retries >= failures then successCase else failureCase
     it "Asynchronous exceptions are rethrown" $ do
-      property $ \(request, retries) -> 
+      property $ \(request, retries) ->
         do
           ref <- liftIO $ newIORef (0 :: Int)
           let service req   = do

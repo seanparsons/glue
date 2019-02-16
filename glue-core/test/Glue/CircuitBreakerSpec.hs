@@ -1,15 +1,16 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.CircuitBreakerSpec where
 
-import Data.Traversable
-import Data.Typeable
-import Glue.CircuitBreaker
-import Test.Hspec
-import Data.IORef
-import Test.QuickCheck
-import Control.Exception.Base hiding (throw, throwIO, try)
-import Control.Exception.Lifted
+import           Control.Exception.Base   hiding (throw, throwIO, try)
+import           Control.Exception.Lifted
+import           Data.IORef
+import           Data.Typeable
+import           Glue.CircuitBreaker
+import           Test.Hspec
+import           Test.QuickCheck
 
 data CircuitBreakerTestException = CircuitBreakerTestException deriving (Eq, Show, Typeable)
 instance Exception CircuitBreakerTestException
@@ -34,13 +35,13 @@ spec = do
         (isCircuitBreakerClosed s) `shouldReturn` False
         (readIORef ref) `shouldReturn` (positiveFailureMax + 1)
     it "Successful calls pass straight through" $ do
-      property $ \(failureMax :: Int, requests :: [Int]) -> do
+      property $ \(failureMax :: Int, requestIDs :: [Int]) -> do
         let positiveFailureMax      = abs failureMax
         let options                 = defaultCircuitBreakerOptions { maxBreakerFailures = positiveFailureMax }
         let service req             = return $ req + 1
         (s, circuitBreakerService)  <- circuitBreaker options service
-        results                     <- traverse (\req -> circuitBreakerService req) requests 
-        let expectedResults         = fmap (+ 1) requests
+        results                     <- traverse (\req -> circuitBreakerService req) requestIDs
+        let expectedResults         = fmap (+ 1) requestIDs
         results `shouldBe` expectedResults
         (isCircuitBreakerOpen s) `shouldReturn` False
         (isCircuitBreakerClosed s) `shouldReturn` True

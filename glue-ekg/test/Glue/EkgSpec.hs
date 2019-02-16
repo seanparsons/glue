@@ -1,20 +1,22 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.EkgSpec where
 
-import Data.Int
-import Data.Typeable
-import Glue.Ekg
-import Glue.Types
-import Test.QuickCheck.Instances()
-import Test.Hspec
-import Data.Text
-import Test.QuickCheck
-import Control.Exception.Base hiding (throw, throwIO)
-import Control.Exception.Lifted
-import System.Metrics
+import           Control.Exception.Base      hiding (throw, throwIO)
+import           Control.Exception.Lifted
+import qualified Data.HashMap.Strict         as M
+import           Data.Int
+import           Data.Text
+import           Data.Typeable
+import           Glue.Ekg
+import           Glue.Types
+import           System.Metrics
 import qualified System.Metrics.Distribution as MD
-import qualified Data.HashMap.Strict as M
+import           Test.Hspec
+import           Test.QuickCheck
+import           Test.QuickCheck.Instances   ()
 
 data EkgTestException = EkgTestException deriving (Eq, Show, Typeable)
 instance Exception EkgTestException

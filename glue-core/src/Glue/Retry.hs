@@ -1,6 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 
 -- | Module containing retry functionality, allowing the construction of services that attempt multiple times in case of transient failure.
 module Glue.Retry(
@@ -13,10 +13,10 @@ module Glue.Retry(
   , retryWaitTimeMultiplier
 ) where
 
-import Glue.Types
-import Control.Concurrent.Lifted
-import Control.Exception.Lifted
-import Control.Monad.Trans.Control
+import           Control.Concurrent.Lifted
+import           Control.Exception.Lifted
+import           Control.Monad.Trans.Control
+import           Glue.Types
 
 -- | Options for determining behaviour of retrying services.
 data RetryOptions a = RetryOptions {

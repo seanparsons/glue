@@ -1,10 +1,10 @@
 module Main where
 
-import Test.Hspec.Runner
 import qualified Spec
+import           Test.Hspec.Runner
 
 customConfig :: Config
-customConfig = defaultConfig 
+customConfig = defaultConfig
   { configColorMode       = ColorAlways
   , configPrintCpuTime    = True
   }

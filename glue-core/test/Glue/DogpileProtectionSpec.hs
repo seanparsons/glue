@@ -1,17 +1,19 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.DogpileProtectionSpec where
 
-import Data.Traversable
-import Data.Typeable
-import Glue.DogpileProtection
-import Test.Hspec
-import Data.IORef
-import Control.Concurrent
-import Control.Concurrent.Async
-import Control.Exception.Base hiding (throw, throwIO)
-import Control.Exception.Lifted
-import Prelude hiding (sequence)
+import           Control.Concurrent
+import           Control.Concurrent.Async
+import           Control.Exception.Base   hiding (throw, throwIO)
+import           Control.Exception.Lifted
+import           Data.IORef
+import           Data.Traversable
+import           Data.Typeable
+import           Glue.DogpileProtection
+import           Prelude                  hiding (sequence)
+import           Test.Hspec
 
 data DogpileProtectionTestException = DogpileProtectionTestException deriving (Eq, Show, Typeable)
 instance Exception DogpileProtectionTestException
@@ -28,7 +30,7 @@ spec = do
     it "With multiple calls to a slow service only one actually gets through" $ do
       counter <- newIORef (0 :: Int)
       let service request = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay delayTime >> return (request * 2)
-      (_, protectedService) <- dogpileProtect service
+      protectedService <- dogpileProtect service
       asyncResults <- traverse (async . protectedService) requests
       let results = traverse wait asyncResults
       results `shouldReturn` (fmap (*2) requests)
@@ -36,10 +38,10 @@ spec = do
     it "With multiple calls to a slow failing service only one actually gets through" $ do
       counter <- newIORef (0 :: Int)
       let service _ = atomicModifyIORef' counter (\n -> (n + 1, ())) >> threadDelay delayTime >> throwIO DogpileProtectionTestException :: IO Int
-      (_, protectedService) <- dogpileProtect service
+      protectedService <- dogpileProtect service
       asyncResults <- traverse (async . protectedService) requests
       let results = traverse wait asyncResults
       results `shouldThrow` (== DogpileProtectionTestException)
-      (readIORef counter) `shouldReturn` 1        
+      (readIORef counter) `shouldReturn` 1
 
 

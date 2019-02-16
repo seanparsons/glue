@@ -1,5 +1,5 @@
 name:                   glue-core
-version:                0.6.1
+version:                0.6.2
 synopsis:               Make better services and clients.
 description:            Combinator library to enhance the general functionality of services and clients.
 license:                BSD3
@@ -60,7 +60,6 @@ test-suite glue-core-tests
                         Glue.FailoverSpec
                         Glue.RetrySpec
                         Glue.DogpileProtectionSpec
-                        Glue.Testing
                         Glue.TimeoutSpec
                         Glue.CircuitBreakerSpec
                         Glue.BatcherSpec

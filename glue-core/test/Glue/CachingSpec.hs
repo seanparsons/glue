@@ -1,18 +1,20 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.CachingSpec where
 
-import Data.Typeable
-import Glue.Caching
-import Glue.Types
-import Test.QuickCheck.Instances()
-import Test.Hspec
-import Data.IORef
-import Test.QuickCheck
-import Control.Exception.Base hiding (throw, throwIO)
-import Control.Exception.Lifted
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
+import           Control.Exception.Base    hiding (throw, throwIO)
+import           Control.Exception.Lifted
+import qualified Data.HashMap.Strict       as M
+import qualified Data.HashSet              as S
+import           Data.IORef
+import           Data.Typeable
+import           Glue.Caching
+import           Glue.Types
+import           Test.Hspec
+import           Test.QuickCheck
+import           Test.QuickCheck.Instances ()
 
 data CachingTestException = CachingTestException Int deriving (Eq, Show, Typeable)
 instance Exception CachingTestException

@@ -1,6 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 
 -- | Module supporting adding timeouts to a given service.
 module Glue.Timeout(
@@ -12,16 +12,16 @@ module Glue.Timeout(
   , timeoutLimitMs
 ) where
 
-import Data.Typeable
-import Glue.Types
-import Control.Concurrent.Lifted
-import Control.Exception.Lifted
-import Control.Monad.Trans.Control
+import           Control.Concurrent.Lifted
+import           Control.Exception.Lifted
+import           Control.Monad.Trans.Control
+import           Data.Typeable
+import           Glue.Types
 
 -- | Options for determining behaviour of services with a timeout.
 data TimeoutOptions = TimeoutOptions {
-    timeoutDescription  :: String       -- ^ Description added to the 'TimeoutException' thrown when the timeout is exceeded.
-  , timeoutLimitMs      :: Int          -- ^ Timeout in milliseconds.
+    timeoutDescription :: String       -- ^ Description added to the 'TimeoutException' thrown when the timeout is exceeded.
+  , timeoutLimitMs     :: Int          -- ^ Timeout in milliseconds.
 }
 
 -- | Default instance of 'TimeoutOptions' with a timeout of 30 seconds.

@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module for creating a service that batches calls across requests.
@@ -9,17 +9,16 @@ module Glue.Batcher(
   , batchWindowMs
 ) where
 
-import Control.Applicative
-import Control.Concurrent.Lifted
-import Control.Exception.Lifted
-import Control.Monad
-import Control.Monad.Trans.Control
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
-import Data.Foldable
-import Data.Hashable
-import Data.IORef.Lifted
-import Glue.Types
+import           Control.Concurrent.Lifted
+import           Control.Exception.Lifted
+import           Control.Monad
+import           Control.Monad.Trans.Control
+import           Data.Foldable
+import           Data.Hashable
+import qualified Data.HashMap.Strict         as M
+import qualified Data.HashSet                as S
+import           Data.IORef.Lifted
+import           Glue.Types
 
 -- | Options for configuring the batching.
 data BatchingOptions = BatchingOptions {

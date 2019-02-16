@@ -1,12 +1,14 @@
-{-# LANGUAGE OverloadedStrings, DeriveDataTypeable, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Glue.SwitchingSpec where
 
-import Glue.Switching
-import Glue.Types
-import Test.Hspec
-import Test.QuickCheck
-import Test.QuickCheck.Instances()
+import           Glue.Switching
+import           Glue.Types
+import           Test.Hspec
+import           Test.QuickCheck
+import           Test.QuickCheck.Instances ()
 
 spec :: Spec
 spec = do

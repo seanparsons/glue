@@ -1,9 +1,9 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE BangPatterns        #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE RankNTypes #-}
 
 -- | Module containing a form of caching where values for given keys are preloaded ahead of time.
 -- | Once warmed up requests for preloaded keys will be instant, with the values refreshed in the background.
@@ -17,24 +17,24 @@ module Glue.Preload(
   , preloadingRun
 ) where
 
-import Data.Maybe
-import Glue.Types
-import Data.Hashable
-import Data.Typeable
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
-import Control.Concurrent.Lifted
-import Control.Exception.Base hiding (throwIO)
-import Control.Exception.Lifted
-import Data.IORef.Lifted
-import Control.Monad.Trans.Control
-import Control.Monad.IO.Class
+import           Control.Concurrent.Lifted
+import           Control.Exception.Base      hiding (throwIO)
+import           Control.Exception.Lifted
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Control
+import           Data.Hashable
+import qualified Data.HashMap.Strict         as M
+import qualified Data.HashSet                as S
+import           Data.IORef.Lifted
+import           Data.Maybe
+import           Data.Typeable
+import           Glue.Types
 
 -- | Options for determining behaviour of preloading services.
 data PreloadedOptions m a b = PreloadedOptions {
-  preloadedKeys             :: S.HashSet a,       -- ^ Keys to preload.
-  preloadingRefreshTimeMs   :: Int,               -- ^ Amount of time between refreshes.
-  preloadingRun             :: MToIO m            -- ^ Get an IO of the response for the caching.
+  preloadedKeys           :: S.HashSet a,       -- ^ Keys to preload.
+  preloadingRefreshTimeMs :: Int,               -- ^ Amount of time between refreshes.
+  preloadingRun           :: MToIO m            -- ^ Get an IO of the response for the caching.
 }
 
 -- | Defaulted options for preloading a HashSet of keys with a 30 second refresh time.
@@ -91,7 +91,7 @@ preloadingService PreloadedOptions{..} service = do
                             !fromPreload <- if S.null fromPreloadKeys then return M.empty else fmap (M.filterWithKey (\k -> \_ -> S.member k fromPreloadKeys)) $ waitForResult stateIORef
                             !fromService <- if S.null fromServiceKeys then return M.empty else service fromServiceKeys
                             return $ M.union fromService fromPreload
-  fork updatePreloaded
+  _ <- fork updatePreloaded
   return (plService, stop)
 
 -- | Preloads a single parameter-less call.

@@ -1,6 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE RankNTypes #-}
 
 -- | Module containing the root types and some support functionality.
 module Glue.Types(
@@ -17,15 +17,15 @@ module Glue.Types(
   , makeCall
 ) where
 
-import Control.Applicative
-import Data.Hashable
-import Control.Concurrent
+import           Control.Applicative
+import           Control.Concurrent
 import qualified Control.Concurrent.MVar.Lifted as MV
-import Control.Exception.Base hiding(throw, throwIO, catch)
-import Control.Exception.Lifted hiding(throw)
-import Control.Monad.Trans.Control
-import qualified Data.HashSet as S
-import qualified Data.HashMap.Strict as M
+import           Control.Exception.Base         hiding (catch, throw, throwIO)
+import           Control.Exception.Lifted       hiding (throw)
+import           Control.Monad.Trans.Control
+import           Data.Hashable
+import qualified Data.HashMap.Strict            as M
+import qualified Data.HashSet                   as S
 
 -- | Type alias for the most basic form of a service supported.
 type BasicService m a b = a -> m b
