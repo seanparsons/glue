@@ -1,5 +1,5 @@
 name:                   glue-example
-version:                0.6.2
+version:                0.6.3
 synopsis:               Make better services and clients.
 description:            Examples of the use of glue library functionality.
 license:                BSD3
@@ -18,10 +18,10 @@ executable glue-example
   main-is:              Main.hs
   hs-source-dirs:       src
   other-modules:        Glue.Example.BatcherExample
-  build-depends:        base >=4.6 && <4.12,
-                        glue-common ==0.6.2,
-                        glue-core ==0.6.2,
-                        glue-ekg ==0.6.2,
+  build-depends:        base >=4.6 && <5,
+                        glue-common ==0.6.3,
+                        glue-core ==0.6.3,
+                        glue-ekg ==0.6.3,
                         transformers,
                         transformers-base,
                         lifted-base,

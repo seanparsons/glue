@@ -1,5 +1,5 @@
 name:                   glue-common
-version:                0.6.2
+version:                0.6.3
 synopsis:               Make better services and clients.
 description:            Common types and base functions used in the glue family of libraries.
 license:                BSD3
@@ -17,7 +17,7 @@ source-repository head
 library
   exposed-modules:      Glue.Types
   -- other-extensions:
-  build-depends:        base >=4.6 && <4.12,
+  build-depends:        base >=4.6 && <5,
                         transformers,
                         transformers-base,
                         lifted-base,
@@ -31,7 +31,7 @@ library
   default-language:     Haskell2010
 
 test-suite glue-common-tests
-  build-depends:        base >=4.6 && <4.12,
+  build-depends:        base >=4.6 && <5,
                         glue-common,
                         QuickCheck -any,
                         quickcheck-instances,
