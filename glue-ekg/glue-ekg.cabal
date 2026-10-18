@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               glue-ekg
-version:            0.7.0
+version:            0.7.0.1
 synopsis:           Make better services and clients.
 description:        Glue library that makes use of ekg for providing stats around services and clients.
 license:            BSD-3-Clause
@@ -32,12 +32,12 @@ library
   hs-source-dirs:  src
   exposed-modules: Glue.Ekg
   build-depends:
-    , base        >= 4.16 && < 5
-    , ekg-core
+    , base        >= 4.14 && < 5
+    , ekg-core    >= 0.1  && < 0.2
     , glue-common ^>= 0.7.0
-    , text
-    , time
-    , unliftio    >= 0.2
+    , text        >= 1.2  && < 2.2
+    , time        >= 1.9  && < 1.15
+    , unliftio    >= 0.2  && < 0.3
 
 test-suite glue-ekg-tests
   import:             common-options
@@ -52,15 +52,14 @@ test-suite glue-ekg-tests
     -threaded
     -rtsopts
     -with-rtsopts=-N
-    -O2
   build-depends:
-    , base                  >= 4.16 && < 5
-    , ekg-core
+    , base                  >= 4.14 && < 5
+    , ekg-core              >= 0.1  && < 0.2
     , glue-common           ^>= 0.7.0
     , glue-ekg
-    , hspec
-    , QuickCheck
-    , quickcheck-instances
-    , text
-    , unliftio              >= 0.2
-    , unordered-containers
+    , hspec                 >= 2.7  && < 2.12
+    , QuickCheck            >= 2.14 && < 2.16
+    , quickcheck-instances  >= 0.3  && < 0.4
+    , text                  >= 1.2  && < 2.2
+    , unliftio              >= 0.2  && < 0.3
+    , unordered-containers  >= 0.2  && < 0.3

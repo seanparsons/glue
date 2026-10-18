@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               glue-example
-version:            0.7.0
+version:            0.7.0.1
 synopsis:           Make better services and clients.
 description:        Examples of the use of glue library functionality.
 license:            BSD-3-Clause
@@ -37,11 +37,11 @@ executable glue-example
     -rtsopts
     -with-rtsopts=-N
   build-depends:
-    , base                 >= 4.16 && < 5
-    , ekg-core
+    , base                 >= 4.14 && < 5
+    , ekg-core             >= 0.1  && < 0.2
     , glue-common          ^>= 0.7.0
     , glue-core            ^>= 0.7.0
     , glue-ekg             ^>= 0.7.0
-    , text
-    , unliftio             >= 0.2
-    , unordered-containers
+    , text                 >= 1.2  && < 2.2
+    , unliftio             >= 0.2  && < 0.3
+    , unordered-containers >= 0.2  && < 0.3

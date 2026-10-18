@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               glue-common
-version:            0.7.0
+version:            0.7.0.1
 synopsis:           Make better services and clients.
 description:        Common types and base functions used in the glue family of libraries.
 license:            BSD-3-Clause
@@ -32,10 +32,10 @@ library
   hs-source-dirs:  src
   exposed-modules: Glue.Types
   build-depends:
-    , base                  >= 4.16 && < 5
-    , hashable
-    , unliftio              >= 0.2
-    , unordered-containers
+    , base                  >= 4.14 && < 5
+    , hashable              >= 1.3  && < 1.6
+    , unliftio              >= 0.2  && < 0.3
+    , unordered-containers  >= 0.2  && < 0.3
 
 test-suite glue-common-tests
   import:             common-options
@@ -50,13 +50,12 @@ test-suite glue-common-tests
     -threaded
     -rtsopts
     -with-rtsopts=-N
-    -O2
   build-depends:
-    , base                  >= 4.16 && < 5
+    , base                  >= 4.14 && < 5
     , glue-common
-    , hashable
-    , hspec
-    , QuickCheck
-    , quickcheck-instances
-    , unliftio              >= 0.2
-    , unordered-containers
+    , hashable              >= 1.3  && < 1.6
+    , hspec                 >= 2.7  && < 2.12
+    , QuickCheck            >= 2.14 && < 2.16
+    , quickcheck-instances  >= 0.3  && < 0.4
+    , unliftio              >= 0.2  && < 0.3
+    , unordered-containers  >= 0.2  && < 0.3
