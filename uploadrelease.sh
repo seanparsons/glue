@@ -1,25 +1,12 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "$ROOT"
 
-cd $ROOT/glue-core
-rm dist/glue-core-*.tar.gz
-cabal sdist
-cabal upload --publish dist/glue-core-*.tar.gz
+rm -rf dist-newstyle/sdist
+cabal sdist all
 
-cd $ROOT/glue-common
-rm dist/glue-common-*.tar.gz
-cabal sdist
-cabal upload --publish dist/glue-common-*.tar.gz
-
-cd $ROOT/glue-ekg
-rm dist/glue-ekg-*.tar.gz
-cabal sdist
-cabal upload --publish dist/glue-ekg-*.tar.gz
-
-cd $ROOT/glue-example
-rm dist/glue-example-*.tar.gz
-cabal sdist
-cabal upload --publish dist/glue-example-*.tar.gz
-
-echo $ROOT
+for pkg in glue-common glue-core glue-ekg glue-example; do
+  cabal upload --publish "dist-newstyle/sdist/${pkg}-"*.tar.gz
+done

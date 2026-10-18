@@ -1,9 +1,6 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE OverloadedStrings  #-}
+module Glue.TimeoutSpec (spec) where
 
-module Glue.TimeoutSpec where
-
-import           Control.Concurrent
+import           Control.Concurrent (threadDelay)
 import           Glue.Timeout
 import           Test.Hspec
 import           Test.QuickCheck
@@ -14,10 +11,10 @@ timeoutOptions = defaultTimeoutOptions { timeoutLimitMs = 10 }
 spec :: Spec
 spec = do
   describe "addTimeout" $ do
-    it "Services taking too long should fail with a timeout" $ do
+    it "Services taking too long should fail with a timeout" $
       property $ \request ->
-        let service req         = (if req > 0 then return () else threadDelay (100 * 1000)) >> return (req + 100)
-            timeoutService      = addTimeout timeoutOptions service
-            successCase         = (timeoutService request) `shouldReturn` (request + 100)
-            failureCase         = (timeoutService request) `shouldThrow` (== TimeoutException(timeoutDescription timeoutOptions))
-        in if request > (0 :: Int) then successCase else failureCase
+        let service req    = (if req > 0 then pure () else threadDelay (50 * 1000)) >> pure (req + 100)
+            timeoutService = addTimeout timeoutOptions service
+            successCase    = timeoutService request `shouldReturn` (request + 100)
+            failureCase    = timeoutService request `shouldThrow` (== TimeoutException (timeoutDescription timeoutOptions))
+        in  if request > (0 :: Int) then successCase else failureCase

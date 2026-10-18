@@ -1,47 +1,49 @@
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Glue.Example.BatcherExample(
-    batcherExample
-) where
+module Glue.Example.BatcherExample
+  ( batcherExample
+  ) where
 
-import           Control.Concurrent.Async
-import           Control.Concurrent.Lifted
 import qualified Data.HashMap.Strict         as M
 import qualified Data.HashSet                as S
-import           Data.IORef.Lifted
 import qualified Data.List                   as L
-import           Data.Text
-import           Data.Traversable
+import           Data.Text                   (Text, unpack)
 import           Glue.Batcher
 import           Glue.Ekg
 import           System.Metrics
 import qualified System.Metrics.Distribution as D
-import           Text.Printf
+import           Text.Printf                 (printf)
+import           UnliftIO.Async              (mapConcurrently_)
+import           UnliftIO.Concurrent         (threadDelay)
+import           UnliftIO.IORef              (atomicModifyIORef', newIORef)
 
 printStats :: Store -> Text -> IO ()
 printStats store name = do
   samples <- sampleAll store
   let possibleValue = M.lookup name samples
   case possibleValue of
-                        (Just (Distribution stats)) -> printf "%s - sum : %f - count : %d" (unpack name) (D.sum stats) (D.count stats) >> putStrLn ""
-                        otherwise                   -> return ()
+    Just (Distribution stats) -> printf "%s - sum : %f - count : %d\n" (unpack name) (D.sum stats) (D.count stats)
+    _                         -> pure ()
 
 runTest :: Store -> Text -> Bool -> IO ()
 runTest store name shouldBatch = do
-  counter <- newIORef 0
-  let listOfNums = [1..50]
-  let requests = fmap (S.fromList . L.take 10) $ L.tails listOfNums :: [S.HashSet Int]
+  counter <- newIORef (0 :: Int)
+  let listOfNums = [1 .. 50 :: Int]
+  let requests = fmap (S.fromList . L.take 10) (L.tails listOfNums)
   let service request = do
-                          atomicModifyIORef' counter (\c -> (c + (S.size request), ()))
-                          threadDelay (500 * S.size request)
-                          return $ M.fromList $ fmap (\r -> (r, r * 2)) $ S.toList request
+        atomicModifyIORef' counter (\c -> (c + S.size request, ()))
+        threadDelay (500 * S.size request)
+        pure $ M.fromList $ fmap (\r -> (r, r * 2)) $ S.toList request
   statsWrappedService <- recordDistribution store name service
-  possiblyBatchedService <- if shouldBatch then return statsWrappedService else fmap (\(_, b) -> b) $ batchingService defaultBatchingOptions statsWrappedService
-  (mapConcurrently possiblyBatchedService requests)
+  possiblyBatchedService <-
+    if shouldBatch
+      then snd <$> batchingService defaultBatchingOptions statsWrappedService
+      else pure statsWrappedService
+  mapConcurrently_ possiblyBatchedService requests
   printStats store name
 
--- Tests the batchingService by comparing the stats with and without it.
+-- | Tests the 'batchingService' by comparing the stats with and without it.
 batcherExample :: IO ()
 batcherExample = do
   store <- newStore

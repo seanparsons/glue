@@ -1,45 +1,50 @@
-{-# LANGUAGE DeriveDataTypeable  #-}
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module supporting adding timeouts to a given service.
-module Glue.Timeout(
-    TimeoutOptions
-  , TimeoutException(..)
+module Glue.Timeout
+  ( TimeoutOptions (..)
+  , TimeoutException (..)
   , defaultTimeoutOptions
   , addTimeout
-  , timeoutDescription
-  , timeoutLimitMs
-) where
+  ) where
 
-import           Control.Concurrent.Lifted
-import           Control.Exception.Lifted
-import           Control.Monad.Trans.Control
-import           Data.Typeable
 import           Glue.Types
+import           UnliftIO           (Exception, MonadUnliftIO)
+import           UnliftIO.Exception (throwIO)
+import           UnliftIO.Timeout   (timeout)
 
 -- | Options for determining behaviour of services with a timeout.
-data TimeoutOptions = TimeoutOptions {
-    timeoutDescription :: String       -- ^ Description added to the 'TimeoutException' thrown when the timeout is exceeded.
-  , timeoutLimitMs     :: Int          -- ^ Timeout in milliseconds.
-}
+data TimeoutOptions = TimeoutOptions
+  { timeoutDescription :: String
+  -- ^ Description added to the t'TimeoutException' thrown when the timeout is exceeded.
+  , timeoutLimitMs     :: Int
+  -- ^ Timeout in milliseconds.
+  }
+  deriving (Eq, Show)
 
--- | Default instance of 'TimeoutOptions' with a timeout of 30 seconds.
+-- | Default instance of t'TimeoutOptions' with a timeout of 30 seconds.
 defaultTimeoutOptions :: TimeoutOptions
-defaultTimeoutOptions = TimeoutOptions { timeoutDescription = "Service call timed out.", timeoutLimitMs = 30000 }
+defaultTimeoutOptions =
+  TimeoutOptions
+    { timeoutDescription = "Service call timed out."
+    , timeoutLimitMs     = 30000
+    }
 
 -- | Exception thrown when the timeout is exceeded.
-data TimeoutException = TimeoutException String deriving (Eq, Show, Typeable)
+newtype TimeoutException = TimeoutException String
+  deriving (Eq, Show)
+
 instance Exception TimeoutException
 
 -- | Function for producing services protected with a timeout.
-addTimeout :: (MonadBaseControl IO m)
-           => TimeoutOptions        -- ^ Options to configure the timeout.
-           -> BasicService m a b    -- ^ Service to protect with a timeout.
-           -> BasicService m a b
-addTimeout options service = (\request -> do
-  currentThreadId <- myThreadId
-  timeoutThreadId <- fork $ do
-                              threadDelay (1000 * timeoutLimitMs options)
-                              throwTo currentThreadId (TimeoutException $ timeoutDescription options)
-  finally (service request) (killThread timeoutThreadId))
+addTimeout
+  :: MonadUnliftIO m
+  => TimeoutOptions
+  -- ^ Options to configure the timeout.
+  -> BasicService m a b
+  -- ^ Service to protect with a timeout.
+  -> BasicService m a b
+addTimeout options service request = do
+  maybeResult <- timeout (1000 * timeoutLimitMs options) (service request)
+  maybe (throwIO $ TimeoutException $ timeoutDescription options) pure maybeResult

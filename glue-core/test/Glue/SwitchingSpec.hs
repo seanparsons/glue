@@ -1,8 +1,6 @@
-{-# LANGUAGE DeriveDataTypeable  #-}
-{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Glue.SwitchingSpec where
+module Glue.SwitchingSpec (spec) where
 
 import           Glue.Switching
 import           Glue.Types
@@ -13,15 +11,15 @@ import           Test.QuickCheck.Instances ()
 spec :: Spec
 spec = do
   describe "switchingService" $ do
-    it "Requests should be handled by the service used" $ do
+    it "Requests should be handled by the service used" $
       property $ \(firstResult :: MultiGetResponse Int Int, secondResult :: MultiGetResponse Int Int, request :: MultiGetRequest Int) -> do
-        let first _ = return firstResult
-        let second _ = return secondResult
+        let first _  = pure firstResult
+            second _ = pure secondResult
         (switchedService, serviceUpdate) <- switchingService first
-        actualFirstResult <- switchedService request
+        actualFirstResult   <- switchedService request
         expectedFirstResult <- first request
         serviceUpdate second
-        actualSecondResult <- switchedService request
+        actualSecondResult   <- switchedService request
         expectedSecondResult <- second request
         actualFirstResult `shouldBe` expectedFirstResult
         actualSecondResult `shouldBe` expectedSecondResult

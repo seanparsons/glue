@@ -5,3 +5,6 @@ dist
 **/.stack-work
 dist-newstyle
 .ghc.*
+.direnv
+result
+result-*
