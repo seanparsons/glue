@@ -19,6 +19,7 @@ Packages
   - `Glue.Hedging`: Tail-latency hedging across distinct backends with caller control of launches and outcomes (`hedgeAcross`), or duplicating one call (`hedgingService`).
   - `Glue.Race`: Low-level race of attempts (`withRace`, `launch`, `awaitNext`, `abandon`) for driving your own hedging policy.
   - `Glue.LoadBalancer`: Round-robin load balancing (`roundRobinLoadBalancer`) and deterministic weighted splits keyed by a stable request key (`weightedBy`).
+  - `Glue.Periodic`: Periodic background jobs with failure reporting, on-demand passes and a graceful stop (`periodically`).
   - `Glue.Preload`: Background key preloading and periodic refresh.
   - `Glue.Retry`: Retries judged on the failure, with constant, linear or exponential backoff, caps, jitter and deadlines (`retryingService`, `retryingServiceEither`).
   - `Glue.Shutdown`: Graceful service shutdown with request draining, fallback/exception rejection, and grace-period timeout (`gracefulShutdown`).

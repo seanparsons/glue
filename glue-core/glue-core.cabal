@@ -40,6 +40,7 @@ library
     Glue.Failover
     Glue.Hedging
     Glue.LoadBalancer
+    Glue.Periodic
     Glue.Preload
     Glue.Race
     Glue.Retry
@@ -70,6 +71,7 @@ test-suite glue-core-tests
     Glue.FailoverSpec
     Glue.HedgingSpec
     Glue.LoadBalancerSpec
+    Glue.PeriodicSpec
     Glue.PreloadSpec
     Glue.RetrySpec
     Glue.ShutdownSpec

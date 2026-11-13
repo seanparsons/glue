@@ -57,6 +57,10 @@
   `AdmissionStore` (in-memory by default) is the extension point for limits shared across
   instances. `limitConcurrencyEither` and `limitConcurrencyByEither` return refusals as the
   caller's failure value (#12).
+- `Glue.Periodic`: `periodically` runs a background pass every `periodMs` measured from the end of
+  the previous pass (optionally immediately and with jitter), reports failed passes without ending
+  the loop, and returns a handle with `runNow` (queued behind a running pass) and a graceful
+  `stopPeriodic` (#14).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 
