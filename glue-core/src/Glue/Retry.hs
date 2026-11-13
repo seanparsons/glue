@@ -9,14 +9,14 @@ module Glue.Retry
   ) where
 
 import           Control.Monad       (when)
+import           Glue.Clock
 import           Glue.Types
 import           UnliftIO            (MonadUnliftIO, SomeAsyncException,
                                       SomeException, fromException)
-import           UnliftIO.Concurrent (threadDelay)
 import           UnliftIO.Exception  (catch, throwIO)
 
 -- | Options for determining behaviour of retrying services.
-data RetryOptions a = RetryOptions
+data RetryOptions m a = RetryOptions
   { retryAllowed            :: a -> Bool
   -- ^ Predicate for determining if we can retry a call, can be used to prevent retries on non-idempotent operations.
   , retryInitialWaitTimeMs  :: Int
@@ -25,16 +25,19 @@ data RetryOptions a = RetryOptions
   -- ^ The upper bound on how many retry attempts to make when invoking the service.
   , retryWaitTimeMultiplier :: Double
   -- ^ How much to multiply 'retryInitialWaitTimeMs' by for each subsequent retry.
+  , retryClock              :: Clock m
+  -- ^ Clock used to wait between attempts.
   }
 
 -- | Defaulted options for retrying 3 times with no wait time.
-defaultRetryOptions :: RetryOptions a
+defaultRetryOptions :: MonadUnliftIO m => RetryOptions m a
 defaultRetryOptions =
   RetryOptions
     { retryAllowed            = const True
     , retryInitialWaitTimeMs  = 0
     , maximumRetries          = 3
     , retryWaitTimeMultiplier = 0
+    , retryClock              = systemClock
     }
 
 possibleAsyncException :: SomeException -> Maybe SomeAsyncException
@@ -45,7 +48,7 @@ possibleAsyncException = fromException
 retryingService
   :: forall m a b.
      MonadUnliftIO m
-  => RetryOptions a
+  => RetryOptions m a
   -- ^ Instance of t'RetryOptions' to configure the retry functionality.
   -> BasicService m a b
   -- ^ The service to perform retries of.
@@ -68,5 +71,5 @@ retryingService options service =
       wait :: Int -> m ()
       wait retryCount =
         when (initialUs > 0) $
-          threadDelay $ round $ fromIntegral initialUs * (multiplier ^ retryCount)
+          clockSleep (retryClock options) $ round $ fromIntegral initialUs * (multiplier ^ retryCount)
   in  attempt 0

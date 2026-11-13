@@ -18,7 +18,7 @@ spec = do
         let requestsAsSets = fmap S.fromList requests
             serviceFunctionality rs = M.fromList $ fmap (\r -> (r, r * 2)) $ S.toList rs
             service = (pure . serviceFunctionality) :: MultiGetService IO Int Int
-        (_, multiService) <- batchingService (BatchingOptions 2) service
+        (_, multiService) <- batchingService (defaultBatchingOptions { batchWindowMs = 2 }) service
         let expectedResults = fmap serviceFunctionality requestsAsSets
         mapConcurrently multiService requestsAsSets `shouldReturn` expectedResults
 
@@ -26,6 +26,6 @@ spec = do
       property $ \(requests :: [Int]) -> do
         let serviceFunctionality rs = M.fromList $ fmap (\r -> (r, r * 2)) $ S.toList rs
             service = (pure . serviceFunctionality) :: MultiGetService IO Int Int
-        (singleService, _) <- batchingService (BatchingOptions 2) service
+        (singleService, _) <- batchingService (defaultBatchingOptions { batchWindowMs = 2 }) service
         let expectedResults = fmap (\r -> Just (r * 2)) requests
         mapConcurrently singleService requests `shouldReturn` expectedResults

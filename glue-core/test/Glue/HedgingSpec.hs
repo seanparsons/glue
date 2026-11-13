@@ -23,7 +23,7 @@ spec = do
             if attemptNum == 1
               then threadDelay (500 * 1000) >> pure (req + 100)
               else pure (req * 2)
-          hedged = hedgingService (HedgingOptions { hedgingCount = 2, hedgingDelayMs = 5 }) service
+          hedged = hedgingService (defaultHedgingOptions { hedgingCount = 2, hedgingDelayMs = 5 }) service
       hedged 21 `shouldReturn` 42
 
     it "Succeeds if one attempt fails immediately and another succeeds" $ do
@@ -33,10 +33,10 @@ spec = do
             if attemptNum == 1
               then throwIO HedgingTestException
               else pure (req * 3)
-          hedged = hedgingService (HedgingOptions { hedgingCount = 2, hedgingDelayMs = 0 }) service
+          hedged = hedgingService (defaultHedgingOptions { hedgingCount = 2, hedgingDelayMs = 0 }) service
       hedged 10 `shouldReturn` 30
 
     it "Rethrows the exception if all hedged attempts fail" $ do
       let service (_ :: Int) = throwIO HedgingTestException :: IO Int
-          hedged = hedgingService (HedgingOptions { hedgingCount = 3, hedgingDelayMs = 0 }) service
+          hedged = hedgingService (defaultHedgingOptions { hedgingCount = 3, hedgingDelayMs = 0 }) service
       hedged 1 `shouldThrow` (== HedgingTestException)

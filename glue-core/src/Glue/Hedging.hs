@@ -11,29 +11,31 @@ module Glue.Hedging
 
 import           Control.Monad       (when)
 import           Data.Maybe          (fromMaybe)
+import           Glue.Clock
 import           Glue.Types
 import           UnliftIO            (Async, MonadUnliftIO, SomeException,
                                       withAsync)
-import           UnliftIO.Concurrent (threadDelay)
 import           UnliftIO.Exception  (throwIO, tryAny)
 import           UnliftIO.STM        (atomically, newTVarIO, readTVar, retrySTM,
                                       writeTVar)
 
 -- | Options for configuring hedged (duplicated) service calls.
-data HedgingOptions = HedgingOptions
+data HedgingOptions m = HedgingOptions
   { hedgingCount   :: Int
   -- ^ Total number of concurrent attempts to make (including the primary call).
   , hedgingDelayMs :: Int
   -- ^ Stagger delay in milliseconds before each subsequent hedged call (`0` to fire all simultaneously).
+  , hedgingClock   :: Clock m
+  -- ^ Clock used for the stagger delay.
   }
-  deriving (Eq, Show)
 
 -- | Default hedging options that fire 2 concurrent requests with no stagger delay.
-defaultHedgingOptions :: HedgingOptions
+defaultHedgingOptions :: MonadUnliftIO m => HedgingOptions m
 defaultHedgingOptions =
   HedgingOptions
     { hedgingCount   = 2
     , hedgingDelayMs = 0
+    , hedgingClock   = systemClock
     }
 
 withAsyncs :: MonadUnliftIO m => [m a] -> ([Async a] -> m b) -> m b
@@ -46,7 +48,7 @@ withAsyncs (m:ms) k = withAsync m $ \a -> withAsyncs ms (\as -> k (a : as))
 hedgingService
   :: forall m a b.
      MonadUnliftIO m
-  => HedgingOptions
+  => HedgingOptions m
   -- ^ Options configuring the number of hedged calls and stagger delay.
   -> BasicService m a b
   -- ^ Underlying service to invoke.
@@ -60,7 +62,7 @@ hedgingService options service request
       let runAttempt :: Int -> m ()
           runAttempt idx = do
             when (idx > 0 && delayUs > 0) $
-              threadDelay (idx * delayUs)
+              clockSleep (hedgingClock options) (idx * delayUs)
             res <- tryAny (service request)
             atomically $ do
               (mWin, remaining, mErr) <- readTVar stateVar
