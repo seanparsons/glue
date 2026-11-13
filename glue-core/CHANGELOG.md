@@ -38,6 +38,14 @@
 - `failoverAcross` tries an ordered list of distinct backends, with `advanceOn` deciding which
   failures move on and which stop the chain, a choice of reporting the first or last failure, an
   indexed variant reporting which backend answered, and `Either` variants (#8).
+- `Glue.Race`: a low-level race of attempts (`withRace`, `launch`, `awaitNext` with an optional
+  timeout, `abandon`, `abandonAll`) for callers driving their own launch decisions. Simultaneous
+  endings are reported earliest index first, and abandoning waits until the attempt has finished,
+  reporting how it really ended (#10).
+- `hedgeAcross` hedges across distinct backends on top of `Glue.Race`: `admitLaunch` lets the
+  caller decline a backup without failing the primary, `onAttemptEnded` reports every attempt
+  (including cancelled losers), an early failure launches the next backend at once, and
+  `hedgeAcrossEither` supports failures as values. `hedgingService` is now built on it (#10).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 

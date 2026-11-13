@@ -16,7 +16,8 @@ Packages
   - `Glue.ConcurrencyLimit`: Bulkhead concurrency limits (`maxInFlight` and optional `maxQueued`).
   - `Glue.DogpileProtection`: Single-flight / request coalescing to prevent cache stampedes.
   - `Glue.Failover`: Request failover with configurable request transformation, or across distinct backends with a predicate deciding which failures advance (`failoverAcross`).
-  - `Glue.Hedging`: Request duplication / tail-latency hedging (`hedgingService`, `hedgingCall`).
+  - `Glue.Hedging`: Tail-latency hedging across distinct backends with caller control of launches and outcomes (`hedgeAcross`), or duplicating one call (`hedgingService`).
+  - `Glue.Race`: Low-level race of attempts (`withRace`, `launch`, `awaitNext`, `abandon`) for driving your own hedging policy.
   - `Glue.LoadBalancer`: Round-robin load balancing across backend services (`roundRobinLoadBalancer`, `roundRobinLoadBalancerNE`).
   - `Glue.Preload`: Background key preloading and periodic refresh.
   - `Glue.Retry`: Retries judged on the failure, with constant, linear or exponential backoff, caps, jitter and deadlines (`retryingService`, `retryingServiceEither`).
