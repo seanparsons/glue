@@ -5,7 +5,7 @@
 -- limiting the number of in-flight and optionally queued requests.
 --
 -- 'limitConcurrency' caps one wrapped service. 'limitConcurrencyBy' keeps one limit per key (a
--- backend or target, say) and refuses a full key at once with 'Saturated' as a value, so a full
+-- backend or target, say) and refuses a full key at once with v'Saturated' as a value, so a full
 -- guard can feed a fallback without exception plumbing and is never mistaken for a backend failure.
 -- A slot covers the wrapped call only; 'withSlot' holds one for work that outlives the call, such
 -- as a streamed response consumed later.
@@ -169,7 +169,7 @@ newInMemoryAdmissionStore limitFor = do
       , trackedKeys = atomically $ M.size <$> readTVar countsVar
       }
 
--- | Runs the work holding a slot for the key, or returns 'Saturated' at once if none is free.
+-- | Runs the work holding a slot for the key, or returns v'Saturated' at once if none is free.
 -- The slot is released on every exit path, including asynchronous cancellation.
 withSlot :: MonadUnliftIO m => AdmissionStore m k -> k -> m r -> m (Either Saturated r)
 withSlot store key work =
@@ -177,7 +177,7 @@ withSlot store key work =
     maybe (pure (Left Saturated)) (const (Right <$> work))
 
 -- | Wraps a service with one concurrency limit per key, refusing a call whose key is full with
--- 'Saturated' instead of queueing it.
+-- v'Saturated' instead of queueing it.
 limitConcurrencyBy
   :: (MonadUnliftIO m, MonadIO n, Hashable k)
   => (a -> k)

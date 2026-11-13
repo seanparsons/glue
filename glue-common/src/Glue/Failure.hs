@@ -47,10 +47,10 @@ valueFailures =
     , reraise     = pure . Left
     }
 
--- | Converts a service in 'ExceptT' to an 'EitherService'.
+-- | Converts a service in t'ExceptT' to an 'EitherService'.
 fromExceptTService :: (a -> ExceptT e m b) -> EitherService m a e b
 fromExceptTService service = runExceptT . service
 
--- | Converts an 'EitherService' to a service in 'ExceptT'.
+-- | Converts an 'EitherService' to a service in t'ExceptT'.
 toExceptTService :: EitherService m a e b -> a -> ExceptT e m b
 toExceptTService service = ExceptT . service

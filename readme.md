@@ -8,7 +8,9 @@ Building Better Services And Clients
 Packages
 ========
 
-- **`glue-common`**: Core service types (`BasicService`, `MultiGetService`, `Call`, `MToIO`) and conversions between single-key and multi-get services.
+- **`glue-common`**: Core service types (`BasicService`, `MultiGetService`, `MToIO`) and conversions between single-key and multi-get services, plus:
+  - `Glue.Clock`: An injectable clock (`systemClock`) used by every time-dependent combinator, and `Glue.Clock.Virtual` for deterministic tests that step time instead of sleeping.
+  - `Glue.Failure`: Support for services that return failures as values (`EitherService`, `ExceptT` conversions); most combinators have an `...Either` variant that inspects `Left` and returns refusals as values.
 - **`glue-core`**: Transport-agnostic resilience and performance combinators (`UnliftIO`-based):
   - `Glue.Batcher`: Time-window request batching for single and multi-get services.
   - `Glue.Caching`: LRU caching (`cacheWithLRU`, `multiCacheWithLRU`).
@@ -26,6 +28,7 @@ Packages
   - `Glue.Switching`: Dynamic runtime service switching (`switchingService`, `switchingCall`).
   - `Glue.Timeout`: Service call timeouts (`addTimeout`).
 - **`glue-ekg`**: EKG metrics instrumentation (`System.Metrics`) for service calls, distributions, counters, and gauges.
+- **`glue-prometheus`**: Prometheus metrics through `prometheus-client` for service calls, failures and latency, and for combinator state through their observer hooks (breaker phase, retries, concurrency slots, hedge outcomes, shutdown in-flight counts).
 - **`glue-example`**: Executable demonstrating batched, cached, and EKG-instrumented service composition.
 
 Building & Development (Nix Flakes)
@@ -87,18 +90,20 @@ userService request = do
   threadDelay 500
   pure $ M.fromList $ fmap (\r -> (r, makeUser r)) $ S.toList request
 
-batchedUserService :: IO (Int -> IO (Maybe User), S.HashSet Int -> IO (M.HashMap Int User), IO ())
-batchedUserService = batchingService (defaultBatchingOptions id) userService
+batchedUserService :: IO (Int -> IO (Maybe User), S.HashSet Int -> IO (M.HashMap Int User))
+batchedUserService = batchingService defaultBatchingOptions userService
 ```
 
 Retries
 -------
 
-Retry transient failures with configurable exponential backoff and jitter:
+Retry transient failures with capped, jittered exponential backoff, deciding from the failure whether to retry:
 
 ```haskell
+import Control.Exception (IOException, fromException)
+import Data.Maybe        (isJust)
 import Glue.Retry
-import UnliftIO.IORef (IORef, atomicModifyIORef', newIORef)
+import UnliftIO.IORef    (IORef, atomicModifyIORef', newIORef)
 
 failingService :: IORef Int -> Int -> IO Int
 failingService ref request = do
@@ -108,7 +113,35 @@ failingService ref request = do
 notSoFailingService :: IO (Int -> IO Int)
 notSoFailingService = do
   ref <- newIORef 0
-  pure $ retryingService defaultRetryOptions (failingService ref)
+  let options = defaultRetryOptions
+        { retryOn         = \e -> isJust (fromException e :: Maybe IOException)
+        , retryBackoff    = ExponentialBackoff 50 2
+        , retryMaxDelayMs = Just 1000
+        , retryJitter     = FullJitter
+        }
+  pure $ retryingService options (failingService ref)
+```
+
+Routing Across Backends
+-----------------------
+
+Services that report expected failures as values can be routed without exception plumbing. Here each backend sits behind its own circuit breaker, and failover moves on only when the failure says the backend is unavailable:
+
+```haskell
+import Data.List.NonEmpty (NonEmpty (..))
+import Glue.CircuitBreaker
+import Glue.Failover
+
+data Failure = Unavailable | Rejected | CircuitOpen
+  deriving (Eq, Show)
+
+route :: (Int -> IO (Either Failure String)) -> (Int -> IO (Either Failure String)) -> IO (Int -> IO (Either Failure String))
+route primary backup = do
+  let breakerOptions = defaultCircuitBreakerOptions { countsAsFailure = (== Unavailable) }
+  (_, guardedPrimary) <- circuitBreakerEither breakerOptions CircuitOpen primary
+  (_, guardedBackup)  <- circuitBreakerEither breakerOptions CircuitOpen backup
+  let failoverOptions = defaultFailoverAcrossOptions { advanceOn = (/= Rejected) }
+  pure $ failoverAcrossEither failoverOptions (guardedPrimary :| [guardedBackup])
 ```
 
 Caching
@@ -149,6 +182,6 @@ resilientPipeline
 resilientPipeline backends = do
   lb      <- roundRobinLoadBalancerNE backends
   limited <- limitConcurrency (defaultConcurrencyLimitOptions { maxInFlight = 32, maxQueued = Just 64 }) lb
-  let hedged = hedgingService (defaultHedgingOptions { hedgingDelayMs = 20, maxExtraRequests = 1 }) limited
+  let hedged = hedgingService (defaultHedgingOptions { hedgingDelayMs = 20, hedgingCount = 2 }) limited
   gracefulShutdown defaultShutdownOptions hedged
 ```

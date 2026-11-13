@@ -57,7 +57,7 @@ data RaceEvent failure r
   -- ^ Every launched attempt has already been reported or abandoned.
   deriving (Show)
 
--- | A race of attempts, each producing an @r@ whose failures are seen through a 'FailureMode'.
+-- | A race of attempts, each producing an @r@ whose failures are seen through a t'FailureMode'.
 data Race m failure r = Race
   { raceMode     :: FailureMode m r failure
   , raceClock    :: Clock m

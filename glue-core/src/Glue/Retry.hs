@@ -62,7 +62,7 @@ data RetryOptions m a failure = RetryOptions
   -- ^ Source of randomness for jitter: a uniformly random value between zero and the argument inclusive.
   , retryRemainingMs :: m (Maybe Int)
   -- ^ Time left (in milliseconds) before the caller's deadline, if there is one. A retry whose wait
-  -- would pass it is skipped. 'remainingUntil' builds this from a deadline on a 'Clock'.
+  -- would pass it is skipped. 'remainingUntil' builds this from a deadline on a t'Clock'.
   , onRetry          :: Int -> failure -> Int -> m ()
   -- ^ Called before each retry with the retry number (from 1), the failure and the chosen wait in milliseconds.
   , retryClock       :: Clock m

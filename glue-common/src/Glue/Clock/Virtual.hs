@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
--- | A virtual 'Clock' for deterministic tests: time only moves when 'advanceClock' is called,
+-- | A virtual t'Clock' for deterministic tests: time only moves when 'advanceClock' is called,
 -- and sleepers are woken in deadline order as it passes them.
 --
 -- A typical spec starts the code under test, waits for it to block with 'waitForSleepers',
@@ -38,7 +38,7 @@ data VirtualClock = VirtualClock
 newVirtualClock :: MonadIO m => m VirtualClock
 newVirtualClock = VirtualClock <$> newTVarIO 0 <*> newTVarIO S.empty <*> newTVarIO 0
 
--- | A 'Clock' reading from the virtual clock.
+-- | A t'Clock' reading from the virtual clock.
 virtualClock :: MonadUnliftIO m => VirtualClock -> Clock m
 virtualClock vc =
   Clock

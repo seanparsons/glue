@@ -30,6 +30,7 @@
         glue-core = final.callCabal2nix "glue-core" ./glue-core { };
         glue-ekg = final.callCabal2nix "glue-ekg" ./glue-ekg { };
         glue-example = final.callCabal2nix "glue-example" ./glue-example { };
+        glue-prometheus = final.callCabal2nix "glue-prometheus" ./glue-prometheus { };
       };
 
       mkHaskellPackages = pkgs: ghcVer:
@@ -66,6 +67,7 @@
                   hp.glue-core
                   hp.glue-ekg
                   hp.glue-example
+                  hp.glue-prometheus
                 ];
               };
             in
@@ -74,6 +76,7 @@
               "${ghcVer}-glue-core" = hp.glue-core;
               "${ghcVer}-glue-ekg" = hp.glue-ekg;
               "${ghcVer}-glue-example" = hp.glue-example;
+              "${ghcVer}-glue-prometheus" = hp.glue-prometheus;
               "${ghcVer}-all" = allForGhc;
             };
 
@@ -84,6 +87,7 @@
           glue-core = defaultHp.glue-core;
           glue-ekg = defaultHp.glue-ekg;
           glue-example = defaultHp.glue-example;
+          glue-prometheus = defaultHp.glue-prometheus;
           default = perGhcPackages."${defaultGhc}-all";
           all-ghcs = pkgs.symlinkJoin {
             name = "glue-all-ghcs";
@@ -117,6 +121,7 @@
               "${ghcVer}-glue-core" = hp.glue-core;
               "${ghcVer}-glue-ekg" = hp.glue-ekg;
               "${ghcVer}-glue-example" = hp.glue-example;
+              "${ghcVer}-glue-prometheus" = hp.glue-prometheus;
             };
         in
         builtins.foldl' (acc: ghcVer: acc // mkGhcChecks ghcVer) { } supportedGhcs
@@ -135,6 +140,7 @@
                 p.glue-core
                 p.glue-ekg
                 p.glue-example
+                p.glue-prometheus
               ];
               withHoogle = false;
               nativeBuildInputs = [

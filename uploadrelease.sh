@@ -7,7 +7,7 @@ cd "$ROOT"
 rm -rf dist-newstyle/sdist
 cabal sdist all
 
-for pkg in glue-common glue-core glue-ekg glue-example; do
+for pkg in glue-common glue-core glue-ekg glue-example glue-prometheus; do
   tarball=$(echo "dist-newstyle/sdist/${pkg}-"*.tar.gz)
   pkgid=$(basename "$tarball" .tar.gz)
   status=$(curl -s -o /dev/null -w '%{http_code}' "https://hackage.haskell.org/package/${pkgid}")

@@ -137,7 +137,7 @@ data MemoryState
   -- ^ Open until the given time.
   | MemoryHalfOpen
 
--- | The in-memory 'BreakerStore' used by 'circuitBreaker', configured from the threshold, window,
+-- | The in-memory t'BreakerStore' used by 'circuitBreaker', configured from the threshold, window,
 -- open duration and clock in the options.
 newInMemoryBreakerStore :: (MonadIO m, MonadIO n) => CircuitBreakerOptions m failure -> n (BreakerStore m)
 newInMemoryBreakerStore options = do

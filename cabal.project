@@ -1,1 +1,1 @@
-packages: glue-common glue-core glue-ekg glue-example
+packages: glue-common glue-core glue-ekg glue-example glue-prometheus
