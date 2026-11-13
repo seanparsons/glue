@@ -63,6 +63,22 @@ cabal build all
 cabal test all
 ```
 
+Releasing
+=========
+
+Every package shares one version and is released together by `uploadrelease.sh`:
+
+```bash
+# Set every package to the new version, add changelog sections to fill in, and commit
+./uploadrelease.sh bump 0.8.1.0
+
+# After filling in the changelogs and merging to master, from an up-to-date master:
+./uploadrelease.sh --dry-run   # every check, build, test and tarball, without uploading or tagging
+./uploadrelease.sh             # uploads to Hackage and pushes the v<version> tag
+```
+
+The release checks that the tree is a clean, up-to-date master, that the versions agree and every changelog has a finished section, runs `cabal check`, builds and tests every package on every supported GHC (`SKIP_TESTS=1` skips this), uploads each package not yet on Hackage, and tags the release. Re-running it after a release has finished does nothing.
+
 Examples
 ========
 
