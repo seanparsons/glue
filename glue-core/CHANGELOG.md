@@ -10,9 +10,26 @@
   `PreloadedOptions` (new `preloadingClock` field). Code that updates fields of the defaults keeps
   compiling; when an update replaces every field that mentions `m` (for example only the clock),
   annotate the default, e.g. `(defaultTimeoutOptions :: TimeoutOptions IO) { timeoutClock = c }` (#13).
+- `Glue.CircuitBreaker` counting is fixed and its semantics match the documentation (#5):
+  - Calls cancelled by an asynchronous exception (timeouts, losing hedges, killed threads) no
+    longer count as failures; the exception is still rethrown.
+  - `maxBreakerFailures` is replaced by `breakerFailureThreshold`, which opens on that failure
+    (the default 3 opens on the third; previously the breaker opened on failure `max + 1`).
+  - Failures are consecutive by default (a call that answers resets the count; previously the
+    count never reset), or counted within `breakerFailureWindowMs` when set.
+  - `resetTimeoutSecs` is replaced by `breakerOpenDurationMs`, how long the breaker stays open,
+    with millisecond resolution on the monotonic clock rather than wall-clock seconds.
+- `CircuitBreakerOptions` and `CircuitBreakerState` take the monad (and options the failure type)
+  as type parameters.
 
 ### Additions
 
+- Circuit breaker failure classification with `countsAsFailure`, a phase observer
+  `onBreakerTransition`, `circuitBreakerPhases`, and a pluggable `BreakerStore` (admit / settle /
+  read phase, with an atomic half-open trial) so state can be shared between instances, with
+  `newInMemoryBreakerStore` as the default (#9).
+- `circuitBreakerEither` and `circuitBreakerEitherWithStore` for services returning failures as
+  values (#6).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 

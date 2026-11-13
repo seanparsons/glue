@@ -12,7 +12,7 @@ Packages
 - **`glue-core`**: Transport-agnostic resilience and performance combinators (`UnliftIO`-based):
   - `Glue.Batcher`: Time-window request batching for single and multi-get services.
   - `Glue.Caching`: LRU caching (`cacheWithLRU`, `multiCacheWithLRU`).
-  - `Glue.CircuitBreaker`: Circuit breaking with failure thresholds and reset windows.
+  - `Glue.CircuitBreaker`: Circuit breaking with failure thresholds, optional failure windows, failure classification and pluggable shared state.
   - `Glue.ConcurrencyLimit`: Bulkhead concurrency limits (`maxInFlight` and optional `maxQueued`).
   - `Glue.DogpileProtection`: Single-flight / request coalescing to prevent cache stampedes.
   - `Glue.Failover`: Request failover with configurable request transformation.
