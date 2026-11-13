@@ -3,7 +3,8 @@
 module Glue.ConcurrencyLimitSpec (spec) where
 
 import           Control.Concurrent       (threadDelay, yield)
-import           Control.Concurrent.Async (async, cancel, mapConcurrently, wait)
+import           Control.Concurrent.Async (async, cancel, mapConcurrently, poll,
+                                           wait)
 import           Data.IORef
 import           Glue.ConcurrencyLimit
 import           Test.Hspec
@@ -45,21 +46,25 @@ spec = do
             , maxQueued                   = Just 1
             , concurrencyLimitDescription = "Busy"
             }
-          service (req :: Int) = do
-            threadDelay (60 * 1000)
+      gate    <- newEmptyTMVarIO
+      entered <- newIORef (0 :: Int)
+      let service (req :: Int) = do
+            atomicModifyIORef' entered (\n -> (n + 1, ()))
+            atomically $ readTMVar gate
             pure req
       limited <- limitConcurrency opts service
       a1 <- async (try (limited 1) :: IO (Either ConcurrencyLimitExceededException Int))
-      threadDelay (10 * 1000)
+      waitUntil ((== 1) <$> readIORef entered)
+      -- With 1 in flight, one of these queues and the other is rejected at once.
       a2 <- async (try (limited 2) :: IO (Either ConcurrencyLimitExceededException Int))
-      threadDelay (10 * 1000)
-      -- 3rd request should be rejected immediately since 1 is in-flight and 1 is queued
-      r3 <- try (limited 3) :: IO (Either ConcurrencyLimitExceededException Int)
-      r1 <- wait a1
-      r2 <- wait a2
-      r3 `shouldBe` Left (ConcurrencyLimitExceededException "Busy")
-      r1 `shouldBe` Right 1
-      r2 `shouldBe` Right 2
+      a3 <- async (try (limited 3) :: IO (Either ConcurrencyLimitExceededException Int))
+      let rejected = fmap (maybe False (either (const False) (either (const True) (const False)))) . poll
+      waitUntil ((||) <$> rejected a2 <*> rejected a3)
+      atomically $ putTMVar gate ()
+      wait a1 `shouldReturn` Right 1
+      results <- traverse wait [a2, a3]
+      length [() | Left (ConcurrencyLimitExceededException "Busy") <- results] `shouldBe` 1
+      length [r | Right r <- results, r `elem` [2, 3]] `shouldBe` 1
 
     it "Releases slot when underlying service throws an exception" $ do
       let opts = defaultConcurrencyLimitOptions { maxInFlight = 1, maxQueued = Just 0 }

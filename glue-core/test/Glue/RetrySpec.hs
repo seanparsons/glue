@@ -2,9 +2,9 @@
 
 module Glue.RetrySpec (spec) where
 
-import           Control.Concurrent     (forkIO, myThreadId, threadDelay)
-import           Control.Exception.Base (AsyncException (UserInterrupt),
-                                         throwTo)
+import           Control.Concurrent       (throwTo)
+import           Control.Concurrent.Async (async, asyncThreadId, waitCatch)
+import           Control.Exception.Base   (AsyncException (UserInterrupt))
 import           Control.Monad.IO.Class (liftIO)
 import           Data.IORef
 import           Glue.Clock
@@ -12,6 +12,8 @@ import           Glue.Retry
 import           Test.Hspec
 import           Test.QuickCheck
 import           UnliftIO.Exception     (Exception, fromException, throwIO, try)
+import           UnliftIO.STM           (atomically, newEmptyTMVarIO, putTMVar,
+                                         readTMVar)
 
 newtype SmallInt = SmallInt Int
   deriving (Eq, Show)
@@ -71,16 +73,21 @@ spec = do
 
     it "Asynchronous exceptions are rethrown" $
       property $ \(request, retries) -> do
-        ref <- liftIO $ newIORef (0 :: Int)
+        ref     <- liftIO $ newIORef (0 :: Int)
+        started <- newEmptyTMVarIO
         let service req = do
               atomicModifyIORef' ref (\c -> (c + 1, ()))
-              threadId <- myThreadId
-              _ <- forkIO (threadDelay 2000 >> throwTo threadId UserInterrupt)
-              threadDelay 1000000
+              atomically $ putTMVar started ()
+              never <- newEmptyTMVarIO
+              atomically $ readTMVar never :: IO ()
               pure (req * 2 :: Int)
             options      = defaultRetryOptions { maximumRetries = retries }
             retryService = retryingService options service
-        retryService request `shouldThrow` (== UserInterrupt)
+        call <- async (retryService request)
+        atomically $ readTMVar started
+        throwTo (asyncThreadId call) UserInterrupt
+        result <- waitCatch call
+        either fromException (const Nothing) result `shouldBe` Just UserInterrupt
         readIORef ref `shouldReturn` 1
 
     it "Does not retry a failure rejected by retryOn" $ do

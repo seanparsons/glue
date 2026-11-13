@@ -2,7 +2,7 @@
 
 module Glue.HedgingSpec (spec) where
 
-import           Control.Concurrent       (threadDelay, yield)
+import           Control.Concurrent       (yield)
 import           Control.Concurrent.Async (async, wait)
 import           Data.IORef
 import           Data.List.NonEmpty       (NonEmpty (..))
@@ -155,14 +155,19 @@ spec = do
 
   describe "hedgingService" $ do
     it "Completes with the fast hedged call when the primary call is slow" $ do
+      vc  <- newVirtualClock
       ref <- newIORef (0 :: Int)
-      let service (req :: Int) = do
+      let clock = virtualClock vc :: Clock IO
+          service (req :: Int) = do
             attemptNum <- atomicModifyIORef' ref (\c -> (c + 1, c + 1))
             if attemptNum == 1
-              then threadDelay (500 * 1000) >> pure (req + 100)
+              then clockSleep clock (500 * 1000) >> pure (req + 100)
               else pure (req * 2)
-          hedged = hedgingService (defaultHedgingOptions { hedgingCount = 2, hedgingDelayMs = 5 }) service
-      hedged 21 `shouldReturn` 42
+          hedged = hedgingService ((defaultHedgingOptions :: HedgingOptions IO) { hedgingCount = 2, hedgingDelayMs = 5, hedgingClock = clock }) service
+      call <- async (hedged 21)
+      waitForSleepers vc 2
+      advanceClock vc 5000
+      wait call `shouldReturn` 42
 
     it "Succeeds if one attempt fails immediately and another succeeds" $ do
       ref <- newIORef (0 :: Int)
