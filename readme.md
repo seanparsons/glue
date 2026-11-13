@@ -15,7 +15,7 @@ Packages
   - `Glue.CircuitBreaker`: Circuit breaking with failure thresholds, optional failure windows, failure classification and pluggable shared state.
   - `Glue.ConcurrencyLimit`: Bulkhead concurrency limits (`maxInFlight` and optional `maxQueued`).
   - `Glue.DogpileProtection`: Single-flight / request coalescing to prevent cache stampedes.
-  - `Glue.Failover`: Request failover with configurable request transformation.
+  - `Glue.Failover`: Request failover with configurable request transformation, or across distinct backends with a predicate deciding which failures advance (`failoverAcross`).
   - `Glue.Hedging`: Request duplication / tail-latency hedging (`hedgingService`, `hedgingCall`).
   - `Glue.LoadBalancer`: Round-robin load balancing across backend services (`roundRobinLoadBalancer`, `roundRobinLoadBalancerNE`).
   - `Glue.Preload`: Background key preloading and periodic refresh.

@@ -35,6 +35,9 @@
 - Retry decided by the failure (`retryOn`), with a delay ceiling (`retryMaxDelayMs`), full or equal
   jitter from an injectable random source (`retryJitter`, `retryRandom`), a deadline after which no
   retry starts (`retryRemainingMs`), an attempt observer (`onRetry`) and `retryingServiceEither` (#7).
+- `failoverAcross` tries an ordered list of distinct backends, with `advanceOn` deciding which
+  failures move on and which stop the chain, a choice of reporting the first or last failure, an
+  indexed variant reporting which backend answered, and `Either` variants (#8).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 
