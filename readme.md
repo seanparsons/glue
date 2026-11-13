@@ -13,7 +13,7 @@ Packages
   - `Glue.Batcher`: Time-window request batching for single and multi-get services.
   - `Glue.Caching`: LRU caching (`cacheWithLRU`, `multiCacheWithLRU`).
   - `Glue.CircuitBreaker`: Circuit breaking with failure thresholds, optional failure windows, failure classification and pluggable shared state.
-  - `Glue.ConcurrencyLimit`: Bulkhead concurrency limits (`maxInFlight` and optional `maxQueued`).
+  - `Glue.ConcurrencyLimit`: Bulkhead concurrency limits (`maxInFlight` and optional `maxQueued`), and keyed limits that refuse with `Saturated` as a value (`limitConcurrencyBy`, `withSlot`).
   - `Glue.DogpileProtection`: Single-flight / request coalescing to prevent cache stampedes.
   - `Glue.Failover`: Request failover with configurable request transformation, or across distinct backends with a predicate deciding which failures advance (`failoverAcross`).
   - `Glue.Hedging`: Tail-latency hedging across distinct backends with caller control of launches and outcomes (`hedgeAcross`), or duplicating one call (`hedgingService`).

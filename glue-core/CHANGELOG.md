@@ -51,6 +51,12 @@
   key by SipHash-2-4 under a `Salt`, so a key reaches the same backend on every instance and across
   restarts and different salts split independently. `bucketOf` and `chooseIndex` expose the choice
   without calling a backend (#11).
+- Keyed concurrency limits: `limitConcurrencyBy` keeps one limit per key and refuses a full key
+  at once with `Saturated` as a value, releasing on every exit path (including cancellation) and
+  dropping idle keys. `withSlot` holds a slot for work that outlives the service call, and an
+  `AdmissionStore` (in-memory by default) is the extension point for limits shared across
+  instances. `limitConcurrencyEither` and `limitConcurrencyByEither` return refusals as the
+  caller's failure value (#12).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 
