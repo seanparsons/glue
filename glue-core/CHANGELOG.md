@@ -46,6 +46,11 @@
   caller decline a backup without failing the primary, `onAttemptEnded` reports every attempt
   (including cancelled losers), an early failure launches the next backend at once, and
   `hedgeAcrossEither` supports failures as values. `hedgingService` is now built on it (#10).
+- `weightedBy`: a deterministic weighted load balancer. Weights are basis points validated up
+  front (`Either WeightError`), and each request's backend is chosen from a caller-supplied stable
+  key by SipHash-2-4 under a `Salt`, so a key reaches the same backend on every instance and across
+  restarts and different salts split independently. `bucketOf` and `chooseIndex` expose the choice
+  without calling a backend (#11).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 
