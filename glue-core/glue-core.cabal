@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               glue-core
-version:            0.7.0.1
+version:            0.8.0.0
 synopsis:           Make better services and clients.
 description:        Combinator library to enhance the general functionality of services and clients.
 license:            BSD-3-Clause
@@ -9,6 +9,7 @@ author:             Sean Parsons
 maintainer:         github@futurenotfound.com
 category:           Network
 build-type:         Simple
+extra-doc-files:    CHANGELOG.md
 tested-with:        GHC == 9.6.7, GHC == 9.8.4, GHC == 9.10.3, GHC == 9.12.3
 
 source-repository head
@@ -39,16 +40,20 @@ library
     Glue.Failover
     Glue.Hedging
     Glue.LoadBalancer
+    Glue.Periodic
     Glue.Preload
+    Glue.Race
     Glue.Retry
     Glue.Shutdown
     Glue.Switching
     Glue.Timeout
   build-depends:
     , base                  >= 4.14 && < 5
-    , glue-common           ^>= 0.7.0
+    , bytestring            >= 0.10 && < 0.13
+    , containers            >= 0.6  && < 0.8
+    , glue-common           ^>= 0.8.0
     , hashable              >= 1.3  && < 1.6
-    , time                  >= 1.9  && < 1.15
+    , random                >= 1.2  && < 1.4
     , unliftio              >= 0.2  && < 0.3
     , unordered-containers  >= 0.2  && < 0.3
 
@@ -66,11 +71,13 @@ test-suite glue-core-tests
     Glue.FailoverSpec
     Glue.HedgingSpec
     Glue.LoadBalancerSpec
+    Glue.PeriodicSpec
     Glue.PreloadSpec
     Glue.RetrySpec
     Glue.ShutdownSpec
     Glue.SwitchingSpec
     Glue.TimeoutSpec
+    Glue.WeightedLoadBalancerSpec
     Spec
   build-tool-depends: hspec-discover:hspec-discover
   ghc-options:
@@ -79,13 +86,14 @@ test-suite glue-core-tests
     -with-rtsopts=-N
   build-depends:
     , async                 >= 2.2  && < 2.3
+    , bytestring            >= 0.10 && < 0.13
+    , containers            >= 0.6  && < 0.8
     , base                  >= 4.14 && < 5
-    , glue-common           ^>= 0.7.0
+    , glue-common           ^>= 0.8.0
     , glue-core
     , hashable              >= 1.3  && < 1.6
     , hspec                 >= 2.7  && < 2.12
     , QuickCheck            >= 2.14 && < 2.16
     , quickcheck-instances  >= 0.3  && < 0.4
-    , time                  >= 1.9  && < 1.15
     , unliftio              >= 0.2  && < 0.3
     , unordered-containers  >= 0.2  && < 0.3

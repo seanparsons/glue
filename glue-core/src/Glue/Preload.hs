@@ -19,11 +19,12 @@ import           Data.Hashable       (Hashable)
 import qualified Data.HashMap.Strict as M
 import qualified Data.HashSet        as S
 import           Data.Maybe          (fromJust)
+import           Glue.Clock
 import           Glue.Types
 import           UnliftIO            (Exception, MonadIO, MonadUnliftIO,
                                       SomeException (..), liftIO)
 import           UnliftIO.Async      (race_)
-import           UnliftIO.Concurrent (forkIO, threadDelay)
+import           UnliftIO.Concurrent (forkIO)
 import           UnliftIO.Exception  (throwIO)
 import           UnliftIO.IORef      (IORef, atomicModifyIORef', newIORef,
                                       readIORef)
@@ -37,15 +38,18 @@ data PreloadedOptions m a b = PreloadedOptions
   -- ^ Amount of time between refreshes.
   , preloadingRun           :: MToIO m
   -- ^ Get an 'IO' of the response for the caching.
+  , preloadingClock         :: Clock m
+  -- ^ Clock used to wait between refreshes.
   }
 
 -- | Defaulted options for preloading a 'S.HashSet' of keys with a 30 second refresh time.
-defaultPreloadedOptions :: S.HashSet a -> MToIO m -> PreloadedOptions m a b
+defaultPreloadedOptions :: MonadUnliftIO m => S.HashSet a -> MToIO m -> PreloadedOptions m a b
 defaultPreloadedOptions toPreload pRun =
   PreloadedOptions
     { preloadedKeys           = toPreload
     , preloadingRefreshTimeMs = 30 * 1000
     , preloadingRun           = pRun
+    , preloadingClock         = systemClock
     }
 
 data PreloadedState a b
@@ -105,7 +109,7 @@ preloadingService PreloadedOptions{..} service = do
         continue <- liftIO $ preloadingRun runUpdate
         if continue
           then do
-            stopped <- liftIO $ raceWait stopVar (preloadingRefreshTimeMs * 1000)
+            stopped <- liftIO $ raceWait stopVar (preloadingRun (clockSleep preloadingClock (preloadingRefreshTimeMs * 1000)))
             if stopped then pure () else updatePreloaded
           else pure ()
   let plService request = do
@@ -123,9 +127,9 @@ preloadingService PreloadedOptions{..} service = do
   void $ liftIO $ forkIO updatePreloaded
   pure (plService, stop)
   where
-    raceWait :: MVar () -> Int -> IO Bool
-    raceWait stopVar delayUs = do
-      race_ (readMVar stopVar) (threadDelay delayUs)
+    raceWait :: MVar () -> IO () -> IO Bool
+    raceWait stopVar sleep = do
+      race_ (readMVar stopVar) sleep
       not <$> tryPutMVar stopVar ()
 
 -- | Preloads a single parameter-less call.
@@ -141,7 +145,7 @@ preloadingCall
   -> n (m b, () -> n ())
 preloadingCall toIO timeBetweenRefreshes call = do
   let multiGetService = basicToMultiGet (\_ -> call) :: MultiGetService m () b
-  let options = PreloadedOptions (S.singleton ()) timeBetweenRefreshes toIO
+  let options = (defaultPreloadedOptions (S.singleton ()) toIO) { preloadingRefreshTimeMs = timeBetweenRefreshes }
   (preloading, stop) <- preloadingService options multiGetService
   let preloadingBasicService = multiGetToBasic preloading
   let preloadingCallResult = fromJust <$> preloadingBasicService ()

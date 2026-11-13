@@ -13,27 +13,29 @@ module Glue.DogpileProtection
 import           Control.Monad       (void)
 import           Data.Hashable       (Hashable)
 import qualified Data.HashMap.Strict as M
+import           Glue.Clock
 import           Glue.Types
-import           UnliftIO            (MonadIO, MonadUnliftIO, SomeException,
-                                      liftIO)
-import           UnliftIO.Concurrent (forkIO, threadDelay)
+import           UnliftIO            (MonadIO, MonadUnliftIO, SomeException)
+import           UnliftIO.Concurrent (forkIO)
 import           UnliftIO.Exception  (onException, throwIO, toException, tryAny)
 import           UnliftIO.IORef      (IORef, atomicModifyIORef', newIORef)
 import           UnliftIO.MVar       (MVar, newEmptyMVar, putMVar, readMVar,
                                       tryPutMVar)
 
 -- | Options for configuring dogpile protection.
-newtype DogpileOptions = DogpileOptions
+data DogpileOptions m = DogpileOptions
   { dogpileCacheTimeMs :: Int
   -- ^ How long (in milliseconds) to retain a completed result for subsequent callers.
+  , dogpileClock       :: Clock m
+  -- ^ Clock used to expire retained results.
   }
-  deriving (Eq, Show)
 
 -- | Default options for dogpile protection, caching completed values for 5 seconds (5000ms).
-defaultDogpileOptions :: DogpileOptions
+defaultDogpileOptions :: MonadUnliftIO m => DogpileOptions m
 defaultDogpileOptions =
   DogpileOptions
     { dogpileCacheTimeMs = 5000
+    , dogpileClock       = systemClock
     }
 
 data DogpileResult b
@@ -51,7 +53,7 @@ getDogpileResult (CachedValue result)     = either throwIO pure result
 dogpileProtectWith
   :: forall m n a b.
      (MonadUnliftIO m, MonadIO n, Hashable a)
-  => DogpileOptions
+  => DogpileOptions m
   -- ^ Options configuring dogpile protection.
   -> BasicService m a b
   -- ^ The service to protect.
@@ -76,8 +78,8 @@ dogpileProtectWith options service = do
             if ttlMs > 0
               then do
                 atomicModifyIORef' mapRef (\m -> (M.insert request (CachedValue result) m, ()))
-                void $ liftIO $ forkIO $ do
-                  threadDelay (ttlMs * 1000)
+                void $ forkIO $ do
+                  clockSleep (dogpileClock options) (ttlMs * 1000)
                   atomicModifyIORef' mapRef (\m -> (M.delete request m, ()))
               else
                 atomicModifyIORef' mapRef (\m -> (M.delete request m, ()))

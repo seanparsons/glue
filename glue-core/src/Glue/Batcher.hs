@@ -13,24 +13,27 @@ import           Data.Foldable       (traverse_)
 import           Data.Hashable       (Hashable)
 import qualified Data.HashMap.Strict as M
 import qualified Data.HashSet        as S
+import           Glue.Clock
 import           Glue.Types
 import           UnliftIO            (MonadIO, MonadUnliftIO, SomeException)
-import           UnliftIO.Concurrent (forkIO, threadDelay)
+import           UnliftIO.Concurrent (forkIO)
 import           UnliftIO.IORef      (IORef, atomicModifyIORef', newIORef)
 import           UnliftIO.MVar       (newEmptyMVar, putMVar)
 
 -- | Options for configuring the batching.
-newtype BatchingOptions = BatchingOptions
+data BatchingOptions m = BatchingOptions
   { batchWindowMs :: Int
   -- ^ Window in milliseconds over which to batch.
+  , batchClock    :: Clock m
+  -- ^ Clock used to wait out the batching window.
   }
-  deriving (Eq, Show)
 
 -- | Default instance of t'BatchingOptions' with a batching window of 10ms.
-defaultBatchingOptions :: BatchingOptions
+defaultBatchingOptions :: MonadUnliftIO m => BatchingOptions m
 defaultBatchingOptions =
   BatchingOptions
     { batchWindowMs = 10
+    , batchClock    = systemClock
     }
 
 -- | Cumulative request batch of all the outstanding calls.
@@ -55,14 +58,14 @@ processCalls service (RequestBatch pendings requests) = do
   result <- makeCall service requests
   traverse_ (applyToPending result) pendings
 
-startBatch :: (Hashable a, MonadUnliftIO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> m ()
+startBatch :: (Hashable a, MonadUnliftIO m) => BatchingOptions m -> MultiGetService m a b -> IORef (RequestBatch a b) -> m ()
 startBatch options service ref =
   void $ forkIO $ do
-    threadDelay (1000 * batchWindowMs options)
+    clockSleep (batchClock options) (1000 * batchWindowMs options)
     pendings <- atomicModifyIORef' ref (\p -> (emptyBatch, p))
     processCalls service pendings
 
-addPending :: (Hashable a, MonadUnliftIO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> PendingRequest a b -> m ()
+addPending :: (Hashable a, MonadUnliftIO m) => BatchingOptions m -> MultiGetService m a b -> IORef (RequestBatch a b) -> PendingRequest a b -> m ()
 addPending options service ref p@(SingleRequest request _) =
   join $
     atomicModifyIORef'
@@ -74,14 +77,14 @@ addPending options service ref p@(MultiRequest requests _) =
       ref
       (\(RequestBatch ps rs) -> (RequestBatch (p : ps) (S.union rs requests), if null ps then startBatch options service ref else pure ()))
 
-singleService :: (Hashable a, MonadUnliftIO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> BasicService m a (Maybe b)
+singleService :: (Hashable a, MonadUnliftIO m) => BatchingOptions m -> MultiGetService m a b -> IORef (RequestBatch a b) -> BasicService m a (Maybe b)
 singleService options service ref request = do
   mvar <- newEmptyMVar
   let pending = SingleRequest request mvar
   addPending options service ref pending
   getResult mvar
 
-multiService :: (Hashable a, MonadUnliftIO m) => BatchingOptions -> MultiGetService m a b -> IORef (RequestBatch a b) -> MultiGetService m a b
+multiService :: (Hashable a, MonadUnliftIO m) => BatchingOptions m -> MultiGetService m a b -> IORef (RequestBatch a b) -> MultiGetService m a b
 multiService options service ref requests = do
   mvar <- newEmptyMVar
   let pending = MultiRequest requests mvar
@@ -91,7 +94,7 @@ multiService options service ref requests = do
 -- | Function for constructing a batching service.
 batchingService
   :: (Hashable a, MonadUnliftIO m, MonadIO n)
-  => BatchingOptions
+  => BatchingOptions m
   -- ^ Options to configure the batched service.
   -> MultiGetService m a b
   -- ^ Service around which to batch requests.

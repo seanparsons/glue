@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               glue-ekg
-version:            0.7.0.1
+version:            0.8.0.0
 synopsis:           Make better services and clients.
 description:        Glue library that makes use of ekg for providing stats around services and clients.
 license:            BSD-3-Clause
@@ -9,6 +9,7 @@ author:             Sean Parsons
 maintainer:         github@futurenotfound.com
 category:           Network
 build-type:         Simple
+extra-doc-files:    CHANGELOG.md
 tested-with:        GHC == 9.6.7, GHC == 9.8.4, GHC == 9.10.3, GHC == 9.12.3
 
 source-repository head
@@ -34,7 +35,7 @@ library
   build-depends:
     , base        >= 4.14 && < 5
     , ekg-core    >= 0.1  && < 0.2
-    , glue-common ^>= 0.7.0
+    , glue-common ^>= 0.8.0
     , text        >= 1.2  && < 2.2
     , time        >= 1.9  && < 1.15
     , unliftio    >= 0.2  && < 0.3
@@ -55,7 +56,7 @@ test-suite glue-ekg-tests
   build-depends:
     , base                  >= 4.14 && < 5
     , ekg-core              >= 0.1  && < 0.2
-    , glue-common           ^>= 0.7.0
+    , glue-common           ^>= 0.8.0
     , glue-ekg
     , hspec                 >= 2.7  && < 2.12
     , QuickCheck            >= 2.14 && < 2.16
