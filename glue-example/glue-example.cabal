@@ -9,6 +9,7 @@ author:             Sean Parsons
 maintainer:         github@futurenotfound.com
 category:           Network
 build-type:         Simple
+extra-doc-files:    CHANGELOG.md
 tested-with:        GHC == 9.6.7, GHC == 9.8.4, GHC == 9.10.3, GHC == 9.12.3
 
 source-repository head
