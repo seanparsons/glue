@@ -1,8 +1,6 @@
 Building Better Services And Clients
 ====================================
 
-[![CI](https://github.com/seanparsons/glue/actions/workflows/ci.yml/badge.svg)](https://github.com/seanparsons/glue/actions/workflows/ci.yml)
-
 `glue` provides composable combinators to handle common cross-cutting concerns of services talking to other services—such as timeouts, retries, caching, batching, circuit breaking, load balancing, concurrency limits, request hedging, and graceful shutdown—without tying your logic to a specific transport like HTTP or gRPC.
 
 Packages
