@@ -19,7 +19,7 @@ Packages
   - `Glue.Hedging`: Request duplication / tail-latency hedging (`hedgingService`, `hedgingCall`).
   - `Glue.LoadBalancer`: Round-robin load balancing across backend services (`roundRobinLoadBalancer`, `roundRobinLoadBalancerNE`).
   - `Glue.Preload`: Background key preloading and periodic refresh.
-  - `Glue.Retry`: Exponential backoff with jitter (`retryingService`, `retryingCall`).
+  - `Glue.Retry`: Retries judged on the failure, with constant, linear or exponential backoff, caps, jitter and deadlines (`retryingService`, `retryingServiceEither`).
   - `Glue.Shutdown`: Graceful service shutdown with request draining, fallback/exception rejection, and grace-period timeout (`gracefulShutdown`).
   - `Glue.Switching`: Dynamic runtime service switching (`switchingService`, `switchingCall`).
   - `Glue.Timeout`: Service call timeouts (`addTimeout`).

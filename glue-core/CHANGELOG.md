@@ -21,6 +21,8 @@
     with millisecond resolution on the monotonic clock rather than wall-clock seconds.
 - `CircuitBreakerOptions` and `CircuitBreakerState` take the monad (and options the failure type)
   as type parameters.
+- `RetryOptions m a failure`: `retryInitialWaitTimeMs` and `retryWaitTimeMultiplier` are replaced
+  by `retryBackoff` (`ConstantBackoff`, `LinearBackoff` or `ExponentialBackoff`) (#7).
 
 ### Additions
 
@@ -30,6 +32,9 @@
   `newInMemoryBreakerStore` as the default (#9).
 - `circuitBreakerEither` and `circuitBreakerEitherWithStore` for services returning failures as
   values (#6).
+- Retry decided by the failure (`retryOn`), with a delay ceiling (`retryMaxDelayMs`), full or equal
+  jitter from an injectable random source (`retryJitter`, `retryRandom`), a deadline after which no
+  retry starts (`retryRemainingMs`), an attempt observer (`onRetry`) and `retryingServiceEither` (#7).
 - `addTimeoutEither` and `gracefulShutdownEither` return their refusal as a value for services
   whose failures are values (#6).
 
